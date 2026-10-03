@@ -67,10 +67,6 @@
   .patients-table .no-data { text-align: center; color: var(--text-light); padding: 40px; }
   .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
   .badge-m { background: #dbeafe; color: #1d4ed8; }
-  .respaldo-bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:-8px 0 18px; }
-  .respaldo-estado { flex-basis:100%; font-size:.8rem; color:var(--text-light); }
-  .respaldo-estado.alerta { color:#9a5b00; background:#fff6e0; border:1px solid #f3cf7a; padding:6px 10px; border-radius:6px; }
-  .esp-title { margin: 28px 0 12px; font-size: 1rem; color: var(--primary); }
   .badge-f { background: #fce7f3; color: #be185d; }
 
   /* ─── Historia Clínica ─── */
@@ -178,14 +174,6 @@
     <input type="text" id="searchInput" placeholder="🔍  Buscar por nombre, cédula o diagnóstico…" oninput="renderPatientList()">
     <button class="btn btn-success" onclick="showScreen('terapeutico')">+ Nueva Historia Clínica</button>
   </div>
-  <div class="respaldo-bar">
-    <button class="btn btn-secondary btn-sm" onclick="v9ExcelTodo()" title="Todas las historias de todos los portales, una fila por dato">📊 Exportar todo a Excel</button>
-    <button class="btn btn-secondary btn-sm" onclick="v9CopiaSeguridad()">💾 Copia de seguridad</button>
-    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('respaldoFile').click()">♻ Restaurar copia</button>
-    <button class="btn btn-secondary btn-sm" onclick="v9ElegirCarpeta()" title="Elige una carpeta sincronizada con Google Drive u OneDrive">📁 Carpeta de respaldo (Drive/OneDrive)</button>
-    <input type="file" id="respaldoFile" accept=".json,application/json" style="display:none" onchange="v9Restaurar(event)">
-    <div id="respaldoEstado" class="respaldo-estado"></div>
-  </div>
 
   <table class="patients-table" id="patientTable">
     <thead>
@@ -195,12 +183,6 @@
       </tr>
     </thead>
     <tbody id="patientTableBody"></tbody>
-  </table>
-
-  <h3 class="esp-title">Historias por especialidad</h3>
-  <table class="patients-table" id="espTable">
-    <thead><tr><th>#</th><th>Paciente</th><th>Especialidad</th><th>Guardada</th><th>Acciones</th></tr></thead>
-    <tbody id="espTableBody"></tbody>
   </table>
 </div>
 
@@ -1238,21 +1220,6 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
   .region-cards.g2,.region-cards.g3,.region-cards.g4{grid-template-columns:1fr}
 }
 
-/* ── v9 ── */
-.v9-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 24px 0;padding:9px 14px;background:#FFF8E6;border:1px solid #F5C66B;border-radius:8px;font-size:12px;color:#5C3D00}
-.v9-banner .btn{padding:4px 10px;font-size:11px}
-.v9-x{margin-left:auto;background:none;border:none;font-size:16px;cursor:pointer;color:#8A6A2A}
-.v9-normal{margin:6px 0 2px;padding:3px 10px;font-size:11px;font-weight:600;border-radius:6px;border:1px dashed var(--vd1,#2E7D32);background:#F1F8F1;color:var(--vd1,#2E7D32);cursor:pointer}
-.v9-normal:hover{background:#E1F2E1}
-.v9-auto{margin-right:auto;align-self:center;font-size:11px;color:var(--gris3,#888)}
-.v9-auto-campo{background:#F3F6F9!important;color:#445!important}
-.v9-firma{display:none;margin:22px 16px 12px;font-size:12px}
-@media print{.v9-firma{display:block}.v9-banner,.v9-normal,.v9-auto{display:none!important}}
-
-.bq-q{font-size:11px;color:var(--gris2);margin-top:2px;line-height:1.35}
-.bq-anc{font-size:9.5px;color:var(--gris3);margin-top:2px;font-style:italic}
-.bq-tabla td select{font-size:13px;padding:3px 6px}
-.bq-sub{font-size:11px;color:var(--gris3);margin-top:3px;font-family:var(--mono)}
 </style>
 </head>
 <body>
@@ -1461,7 +1428,8 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Clasificación temporal</label><select><option value=&quot;&quot;>—</option><option>Agudo (&amp;lt;6 sem.)</option><option>Subagudo (6–12 sem.)</option><option>Crónico (&amp;gt;12 sem.)</option><option>Recurrente</option></select></div>
       </div>
       <div class=&quot;sub&quot;>EVA — Escala Visual Analógica</div>
-      <div class=&quot;hint&quot; style=&quot;margin:2px 0 6px&quot;>Escala numérica 0-10 (0 = sin dolor · 10 = peor dolor imaginable). Registre una sola vez cada contexto.</div>
+      <div class=&quot;eva-row&quot; id=&quot;eva-lumbar&quot; hidden style=&quot;display:none&quot;></div>
+      <div class=&quot;eva-lbl&quot; hidden style=&quot;display:none&quot;><span>Sin dolor</span><span>Leve</span><span>Moderado</span><span>Intenso</span><span>Máximo</span></div>
       <div class=&quot;g3&quot; style=&quot;margin-top:10px&quot;>
         <div class=&quot;f&quot;><label>EVA reposo</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;></div>
         <div class=&quot;f&quot;><label>EVA movimiento</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;></div>
@@ -1471,13 +1439,18 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Irradiación</label><select><option value=&quot;&quot;>—</option><option>Sin irradiación</option><option>Glúteo unilateral</option><option>Glúteo bilateral</option><option>Muslo posterior L4-L5</option><option>Pierna + pie L5-S1</option><option>Cara anterior muslo</option><option>Bilateral MMII</option><option>Ingle</option></select></div>
       </div>
       <div class=&quot;sub&quot;>Síntomas asociados</div>
-      <div class=&quot;cg3&quot;><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Parestesias</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Entumecimiento</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Debilidad MMII</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Rigidez matutina</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Claudicación neurógena</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Incontinencia urinaria</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Incontinencia fecal</label></div>
+      <div class=&quot;cg3&quot;><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Parestesias</label><label class=&quot;ci&quot; hidden style=&quot;display:none&quot;><input type=&quot;checkbox&quot;> Hormigueo</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Entumecimiento</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Debilidad MMII</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Rigidez matutina</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Claudicación neurógena</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Incontinencia urinaria</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Incontinencia fecal</label></div>
       <div class=&quot;alerta&quot;><div class=&quot;sub rojo&quot;>⚠ Banderas rojas</div>
         <div class=&quot;cg&quot;><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Antecedente de cáncer</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Fractura osteoporótica</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Infección sistémica</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Síndrome cauda equina</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Déficit neurológico progresivo</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Trauma vertebral previo</label></div>
       </div>
     </div></div>
 
-          
+          <div style=&quot;font-size:10px;font-weight:700;color:var(--gris2);text-transform:uppercase;letter-spacing:.06em;margin:8px 0 5px&quot; hidden style=&quot;display:none&quot;>Escala visual de dolor (EVA) — el paciente selecciona el valor</div>
+      <div id=&quot;eva-lumbar-actual&quot; class=&quot;eva-wrap&quot; hidden style=&quot;display:none&quot;></div>
+      <div class=&quot;g2&quot; style=&quot;margin-top:8px&quot; hidden style=&quot;display:none&quot;>
+        <div id=&quot;eva-lumbar-min&quot; class=&quot;eva-wrap&quot;></div>
+        <div id=&quot;eva-lumbar-max&quot; class=&quot;eva-wrap&quot;></div>
+      </div>
 
     <div class=&quot;fsec&quot;><div class=&quot;fh c-az&quot; onclick=&quot;tog(this,'lumbar')&quot;><span class=&quot;fn&quot;>03</span><span class=&quot;fi&quot;>📂</span><h3>Antecedentes</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb&quot;><div class=&quot;g2&quot;>
@@ -1501,7 +1474,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Tono paravertebral</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Hipertonía</option><option>Hipotonía</option></select></div>
       </div>
       <div class=&quot;sub&quot;>Palpación</div>
-      <div class=&quot;g4&quot;><div class=&quot;f&quot;><label>Niveles dolorosos</label><input type=&quot;text&quot; placeholder=&quot;L3, L4-L5, sacro...&quot;></div><div class=&quot;f&quot;><label>Puntos gatillo</label><input type=&quot;text&quot;></div><div class=&quot;f&quot;><label>Temperatura local</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Aumentada</option><option>Disminuida</option></select></div></div>
+      <div class=&quot;g4&quot;><div class=&quot;f&quot;><label>Niveles dolorosos</label><input type=&quot;text&quot; placeholder=&quot;L3, L4-L5, sacro...&quot;></div><div class=&quot;f&quot;><label>Puntos gatillo</label><input type=&quot;text&quot;></div><div class=&quot;f&quot;><label>Temperatura local</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Aumentada</option><option>Disminuida</option></select></div><div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Espasmo muscular</label><select><option value=&quot;&quot;>—</option><option>No</option><option>Leve</option><option>Moderado</option><option>Severo</option></select></div></div>
     </div></div>
 
     <div class=&quot;fsec&quot;><div class=&quot;fh c-az&quot; onclick=&quot;tog(this,'lumbar')&quot;><span class=&quot;fn&quot;>05</span><span class=&quot;fi&quot;>📐</span><h3>Rango de movimiento — Goniometría</h3><span class=&quot;ft&quot;>▾</span></div>
@@ -1523,9 +1496,9 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
 
     <div class=&quot;fsec&quot;><div class=&quot;fh c-az ab&quot; onclick=&quot;tog(this,'lumbar')&quot;><span class=&quot;fn&quot;>07</span><span class=&quot;fi&quot;>⚡</span><h3>Reflejos osteotendinosos (ROT) y cutáneos</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb ab&quot;>
-      <div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:10px&quot; id=&quot;rot-lumbar&quot;><div class=&quot;f&quot;><label>Rotuliano D (L3-L4)</label><select data-k=&quot;n_rot_rot_d&quot;><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option><option>+4 Clonus</option></select></div><div class=&quot;f&quot;><label>Rotuliano I (L3-L4)</label><select data-k=&quot;n_rot_rot_i&quot;><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option><option>+4 Clonus</option></select></div><div class=&quot;f&quot;><label>Isquiotibial medial D (L5)</label><select data-k=&quot;n_rot_isq_d&quot;><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option><option>+4 Clonus</option></select></div><div class=&quot;f&quot;><label>Isquiotibial medial I (L5)</label><select data-k=&quot;n_rot_isq_i&quot;><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option><option>+4 Clonus</option></select></div><div class=&quot;f&quot;><label>Aquíleo D (S1)</label><select data-k=&quot;n_rot_aqu_d&quot;><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option><option>+4 Clonus</option></select></div><div class=&quot;f&quot;><label>Aquíleo I (S1)</label><select data-k=&quot;n_rot_aqu_i&quot;><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option><option>+4 Clonus</option></select></div></div>
+      <div style=&quot;display:grid;grid-template-columns:1fr 1fr;gap:10px&quot; id=&quot;rot-lumbar&quot;></div>
       <div class=&quot;sub&quot; style=&quot;margin-top:14px&quot;>Reflejos cutáneos</div>
-      <table class=&quot;tabla&quot;><thead><tr><th>Reflejo</th><th>Nivel</th><th>D</th><th>I</th><th>Observación</th></tr></thead><tbody id=&quot;cut-lumbar&quot;><tr><td>Cutáneo abdominal</td><td>T7-T12</td><td><select data-k=&quot;n_cut_abd_d&quot;><option value=&quot;&quot;>—</option><option>Presente</option><option>Disminuido</option><option>Abolido</option></select></td><td><select data-k=&quot;n_cut_abd_i&quot;><option value=&quot;&quot;>—</option><option>Presente</option><option>Disminuido</option><option>Abolido</option></select></td><td><input type=&quot;text&quot; data-k=&quot;n_cut_abd_obs&quot; placeholder=&quot;...&quot;></td></tr><tr><td>Cremastérico</td><td>L1-L2</td><td><select data-k=&quot;n_cut_cre_d&quot;><option value=&quot;&quot;>—</option><option>Presente</option><option>Disminuido</option><option>Abolido</option></select></td><td><select data-k=&quot;n_cut_cre_i&quot;><option value=&quot;&quot;>—</option><option>Presente</option><option>Disminuido</option><option>Abolido</option></select></td><td><input type=&quot;text&quot; data-k=&quot;n_cut_cre_obs&quot; placeholder=&quot;...&quot;></td></tr><tr><td>Cutáneo plantar</td><td>S1-S2</td><td><select data-k=&quot;n_cut_pla_d&quot;><option value=&quot;&quot;>—</option><option>Flexor (normal)</option><option>Indiferente</option><option>Babinski (extensor)</option></select></td><td><select data-k=&quot;n_cut_pla_i&quot;><option value=&quot;&quot;>—</option><option>Flexor (normal)</option><option>Indiferente</option><option>Babinski (extensor)</option></select></td><td><input type=&quot;text&quot; data-k=&quot;n_cut_pla_obs&quot; placeholder=&quot;...&quot;></td></tr></tbody></table>
+      <table class=&quot;tabla&quot;><thead><tr><th>Reflejo</th><th>Nivel</th><th>D</th><th>I</th><th>Observación</th></tr></thead><tbody id=&quot;cut-lumbar&quot;></tbody></table>
       <div class=&quot;g2&quot; style=&quot;margin-top:10px&quot;>
         <div class=&quot;f&quot;><label>Reflejos patológicos</label><input type=&quot;text&quot; placeholder=&quot;Babinski, clonus, Oppenheim...&quot;></div>
         <div class=&quot;f&quot;><label>Conclusión neurológica</label><select><option value=&quot;&quot;>—</option><option>Sin déficit neurológico</option><option>Hiperreflexia (MON superior)</option><option>Hiporreflexia radicular</option><option>Mixto — derivar</option></select></div>
@@ -1535,7 +1508,20 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
     <div class=&quot;fsec&quot;><div class=&quot;fh c-az&quot; onclick=&quot;tog(this,'lumbar')&quot;><span class=&quot;fn&quot;>08</span><span class=&quot;fi&quot;>🧠</span><h3>Examen neurológico segmentario L2–S1</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb&quot;><table class=&quot;tabla&quot;><thead><tr><th>Raíz</th><th>Dermatoma</th><th>Motor clave</th><th>Sensitivo D</th><th>Sensitivo I</th><th>Motor D /5</th><th>Motor I /5</th></tr></thead><tbody id=&quot;neuro-lumbar&quot;></tbody></table></div></div>
 
-    
+    <div class=&quot;fsec&quot; hidden style=&quot;display:none&quot;><div class=&quot;fh c-az ab&quot; onclick=&quot;tog(this,'lumbar')&quot;><span class=&quot;fn&quot;>09</span><span class=&quot;fi&quot;>🗺️</span><h3>Dermatomas · Miotomas · Esclerotomas — L1 a S3</h3><span class=&quot;ft&quot;>▾</span></div>
+    <div class=&quot;fb ab&quot;>
+      <div style=&quot;display:flex;gap:4px;margin-bottom:12px&quot;>
+        <button class=&quot;chip sel&quot; onclick=&quot;dmtT('lumbar','mapa',this)&quot;>Mapa por nivel</button>
+        <button class=&quot;chip&quot; onclick=&quot;dmtT('lumbar','tabla',this)&quot;>Tabla comparativa</button>
+        <button class=&quot;chip&quot; onclick=&quot;dmtT('lumbar','reg',this)&quot;>Registro clínico</button>
+      </div>
+      <div id=&quot;dmt-lumbar-mapa&quot;>
+        <div style=&quot;display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px&quot; id=&quot;niv-lumbar&quot;></div>
+        <div style=&quot;border:1px solid var(--borde);border-radius:10px;overflow:hidden&quot;><div id=&quot;dh-lumbar&quot; style=&quot;padding:10px 14px;display:flex;align-items:center;gap:10px&quot;></div><div id=&quot;db-lumbar&quot; style=&quot;padding:12px 14px&quot;></div></div>
+      </div>
+      <div id=&quot;dmt-lumbar-tabla&quot; style=&quot;display:none&quot;><table style=&quot;width:100%;border-collapse:collapse;font-size:11px;margin-top:6px&quot;><thead><tr><th style=&quot;padding:6px 8px;background:var(--gris5);font-size:10px;font-weight:600;color:var(--gris2);text-transform:uppercase;border:1px solid var(--borde)&quot;>Raíz</th><th style=&quot;padding:6px 8px;background:var(--gris5);font-size:10px;font-weight:600;color:var(--gris2);text-transform:uppercase;border:1px solid var(--borde)&quot;>Dermatoma</th><th style=&quot;padding:6px 8px;background:var(--gris5);font-size:10px;font-weight:600;color:var(--gris2);text-transform:uppercase;border:1px solid var(--borde)&quot;>Miotoma</th><th style=&quot;padding:6px 8px;background:var(--gris5);font-size:10px;font-weight:600;color:var(--gris2);text-transform:uppercase;border:1px solid var(--borde)&quot;>Esclerotoma</th><th style=&quot;padding:6px 8px;background:var(--gris5);font-size:10px;font-weight:600;color:var(--gris2);text-transform:uppercase;border:1px solid var(--borde)&quot;>Reflejo</th></tr></thead><tbody id=&quot;ct-lumbar&quot;></tbody></table></div>
+      <div id=&quot;dmt-lumbar-reg&quot; style=&quot;display:none&quot;><table class=&quot;tabla&quot;><thead><tr><th>Raíz</th><th>Sensitivo D</th><th>Sensitivo I</th><th>Motor D</th><th>Motor I</th><th>ROT D</th><th>ROT I</th><th>Dolor referido</th></tr></thead><tbody id=&quot;rn-lumbar&quot;></tbody></table></div>
+    </div></div>
 
     <div class=&quot;fsec&quot;><div class=&quot;fh c-az&quot; onclick=&quot;tog(this,'lumbar')&quot;><span class=&quot;fn&quot;>10</span><span class=&quot;fi&quot;>💪</span><h3>Valoración muscular — Escala Daniels</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb&quot;><div class=&quot;daniels-leg&quot;><b>Escala Daniels 0–5:</b> <span class=&quot;gd&quot;>0</span> ausencia de contracción · <span class=&quot;gd&quot;>1</span> contracción sin movimiento · <span class=&quot;gd&quot;>2</span> movimiento sin gravedad · <span class=&quot;gd&quot;>3</span> contra gravedad · <span class=&quot;gd&quot;>4</span> contra resistencia parcial · <span class=&quot;gd&quot;>5</span> normal contra resistencia máxima</div>
@@ -1567,7 +1553,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Desfavorable</option></select></div>
         <div class=&quot;f gc&quot;><label>Notas clínicas</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
   </div><div class=&quot;bbar&quot;><button class=&quot;btn sec&quot; onclick=&quot;limpiar('p-lumbar')&quot;>🗑 Limpiar</button><button class=&quot;btn prn&quot; onclick=&quot;window.print()&quot;>🖨 Imprimir</button><button class=&quot;btn sav&quot; onclick=&quot;abrirGuardar('lumbar')&quot;>💾 Guardar</button><button class=&quot;btn prn&quot; onclick=&quot;exportarJSON('lumbar')&quot; title=&quot;Descargar JSON portable&quot;>⬇ JSON</button><button class=&quot;btn sec&quot; onclick=&quot;document.getElementById('jsonFile').dataset.tipo='lumbar';document.getElementById('jsonFile').click()&quot; title=&quot;Cargar JSON&quot;>⬆ JSON</button></div></div>
@@ -1611,7 +1597,8 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Mecanismo de lesión</label><select><option value=&quot;&quot;>—</option><option>Caída sobre brazo extendido</option><option>Caída sobre hombro</option><option>Tracción forzada</option><option>Movimiento repetitivo</option><option>Gesto deportivo</option><option>Insidioso</option></select></div>
       </div>
       <div class=&quot;sub vd&quot;>EVA — Escala Visual Analógica</div>
-      <div class=&quot;hint&quot; style=&quot;margin:2px 0 6px&quot;>Escala numérica 0-10 (0 = sin dolor · 10 = peor dolor imaginable). Registre una sola vez cada contexto.</div>
+      <div class=&quot;eva-row&quot; id=&quot;eva-hombro&quot; hidden style=&quot;display:none&quot;></div>
+      <div class=&quot;eva-lbl&quot; hidden style=&quot;display:none&quot;><span>Sin dolor</span><span>Leve</span><span>Moderado</span><span>Intenso</span><span>Máximo</span></div>
       <div class=&quot;g3&quot; style=&quot;margin-top:10px&quot;>
         <div class=&quot;f&quot;><label>EVA reposo</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;></div>
         <div class=&quot;f&quot;><label>EVA movimiento activo</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;></div>
@@ -1621,13 +1608,18 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Empeora con</label><select><option value=&quot;&quot;>—</option><option>Elevación</option><option>Rotación interna</option><option>Decúbito lateral</option><option>Actividad deportiva</option><option>Movimiento nocturno</option></select></div>
       </div>
       <div class=&quot;sub vd&quot;>Síntomas asociados</div>
-      <div class=&quot;cg3&quot;><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Parestesias brazo/mano</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Sensación de inestabilidad</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Clic / crepitación</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Limitación funcional AVD</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Dolor irradiado a cuello</label></div>
+      <div class=&quot;cg3&quot;><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Parestesias brazo/mano</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Sensación de inestabilidad</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Clic / crepitación</label><label class=&quot;ci&quot; hidden style=&quot;display:none&quot;><input type=&quot;checkbox&quot;> Atrofia muscular visible</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Limitación funcional AVD</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Dolor irradiado a cuello</label></div>
       <div class=&quot;alerta&quot;><div class=&quot;sub rojo&quot;>⚠ Banderas rojas</div>
         <div class=&quot;cg&quot;><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Masa palpable / neoplasia</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Fiebre / infección</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Fractura no consolidada</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Déficit neurológico progresivo</label></div>
       </div>
     </div></div>
 
-          
+          <div style=&quot;font-size:10px;font-weight:700;color:var(--gris2);text-transform:uppercase;letter-spacing:.06em;margin:8px 0 5px&quot; hidden style=&quot;display:none&quot;>Escala visual de dolor (EVA) — el paciente selecciona el valor</div>
+      <div id=&quot;eva-hombro-actual&quot; class=&quot;eva-wrap&quot; hidden style=&quot;display:none&quot;></div>
+      <div class=&quot;g2&quot; style=&quot;margin-top:8px&quot; hidden style=&quot;display:none&quot;>
+        <div id=&quot;eva-hombro-min&quot; class=&quot;eva-wrap&quot;></div>
+        <div id=&quot;eva-hombro-max&quot; class=&quot;eva-wrap&quot;></div>
+      </div>
 
     <div class=&quot;fsec&quot;><div class=&quot;fh c-vd&quot; onclick=&quot;tog(this,'hombro')&quot;><span class=&quot;fn&quot;>03</span><span class=&quot;fi&quot;>📂</span><h3>Antecedentes</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb&quot;><div class=&quot;g2&quot;>
@@ -1696,7 +1688,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <div class=&quot;f&quot;><label>Constant-Murley Score (/100)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;><div class=&quot;hint&quot;>100 = hombro sano (ajustar por edad/sexo)</div></div>
       <div class=&quot;f&quot;><label>WOSI — Western Ontario Shoulder (/100)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;></div>
       <div class=&quot;f&quot;><label>WORC (manguito rotador) (/100)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;></div>
-      
+      <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Escala de dolor nocturno</label><select><option value=&quot;&quot;>—</option><option>Sin dolor nocturno</option><option>Leve — no despierta</option><option>Moderado — despierta ocasionalmente</option><option>Severo — insomnio</option></select></div>
     </div></div></div>
 
     <div class=&quot;fsec&quot;><div class=&quot;fh c-vd&quot; onclick=&quot;tog(this,'hombro')&quot;><span class=&quot;fn&quot;>10</span><span class=&quot;fi&quot;>🎯</span><h3>Control escapulotorácico y estabilidad dinámica</h3><span class=&quot;ft&quot;>▾</span></div>
@@ -1725,7 +1717,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Desfavorable</option></select></div>
         <div class=&quot;f gc&quot;><label>Notas / contraindicaciones</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -1770,7 +1762,8 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Mecanismo de lesión</label><select><option value=&quot;&quot;>—</option><option>Contacto directo</option><option>Torsión + flexión</option><option>Hiperextensión</option><option>Valgo forzado</option><option>Varo forzado</option><option>Sobreuso / correr</option><option>Insidioso</option></select></div>
       </div>
       <div class=&quot;sub pu&quot;>EVA — Escala Visual Analógica</div>
-      <div class=&quot;hint&quot; style=&quot;margin:2px 0 6px&quot;>Escala numérica 0-10 (0 = sin dolor · 10 = peor dolor imaginable). Registre una sola vez cada contexto.</div>
+      <div class=&quot;eva-row&quot; id=&quot;eva-rodilla&quot; hidden style=&quot;display:none&quot;></div>
+      <div class=&quot;eva-lbl&quot; hidden style=&quot;display:none&quot;><span>Sin dolor</span><span>Leve</span><span>Moderado</span><span>Intenso</span><span>Máximo</span></div>
       <div class=&quot;g3&quot; style=&quot;margin-top:10px&quot;>
         <div class=&quot;f&quot;><label>EVA reposo</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;></div>
         <div class=&quot;f&quot;><label>EVA carga / marcha</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;></div>
@@ -1780,10 +1773,15 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Hemartrosis</label><select><option value=&quot;&quot;>—</option><option>No</option><option>Sí — sugestivo LCA/fractura</option></select></div>
       </div>
       <div class=&quot;sub pu&quot;>Síntomas asociados</div>
-      <div class=&quot;cg3&quot;><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Inestabilidad / fallos</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Bloqueo articular</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Clic / crepitación</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Rigidez matutina</label></div>
+      <div class=&quot;cg3&quot;><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Inestabilidad / fallos</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Bloqueo articular</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Clic / crepitación</label><label class=&quot;ci&quot; hidden style=&quot;display:none&quot;><input type=&quot;checkbox&quot;> Derramearticular</label><label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Rigidez matutina</label><label class=&quot;ci&quot; hidden style=&quot;display:none&quot;><input type=&quot;checkbox&quot;> Dolor en subida/bajada escaleras</label></div>
     </div></div>
 
-          
+          <div style=&quot;font-size:10px;font-weight:700;color:var(--gris2);text-transform:uppercase;letter-spacing:.06em;margin:8px 0 5px&quot; hidden style=&quot;display:none&quot;>Escala visual de dolor (EVA) — el paciente selecciona el valor</div>
+      <div id=&quot;eva-rodilla-actual&quot; class=&quot;eva-wrap&quot; hidden style=&quot;display:none&quot;></div>
+      <div class=&quot;g2&quot; style=&quot;margin-top:8px&quot; hidden style=&quot;display:none&quot;>
+        <div id=&quot;eva-rodilla-min&quot; class=&quot;eva-wrap&quot;></div>
+        <div id=&quot;eva-rodilla-max&quot; class=&quot;eva-wrap&quot;></div>
+      </div>
 
     <div class=&quot;fsec&quot;><div class=&quot;fh c-pu&quot; onclick=&quot;tog(this,'rodilla')&quot;><span class=&quot;fn&quot;>03</span><span class=&quot;fi&quot;>📂</span><h3>Antecedentes</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb&quot;><div class=&quot;g2&quot;>
@@ -1796,7 +1794,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
     <div class=&quot;fsec&quot;><div class=&quot;fh c-pu&quot; onclick=&quot;tog(this,'rodilla')&quot;><span class=&quot;fn&quot;>04</span><span class=&quot;fi&quot;>🧍</span><h3>Alineamiento y evaluación postural MMII</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb&quot;>
       <div class=&quot;g4&quot;>
-        <div class=&quot;f&quot;><label>Alineamiento rodilla D</label><select><option value=&quot;&quot;>—</option><option>Varo D</option><option>Valgo D</option><option>Recurvatum D</option><option>Normal D</option></select></div>
+        <div class=&quot;f&quot;><label>Alineamiento rodilla</label><select><option value=&quot;&quot;>—</option><option>Varo D</option><option>Valgo D</option><option>Recurvatum D</option><option>Normal D</option></select></div>
         <div class=&quot;f&quot;><label>Alineamiento rodilla I</label><select><option value=&quot;&quot;>—</option><option>Varo I</option><option>Valgo I</option><option>Recurvatum I</option><option>Normal I</option></select></div>
         <div class=&quot;f&quot;><label>Ángulo Q derecho (°)</label><input type=&quot;number&quot;><div class=&quot;hint&quot;>Normal ♂ &amp;lt;15° · ♀ &amp;lt;18°</div></div>
         <div class=&quot;f&quot;><label>Ángulo Q izquierdo (°)</label><input type=&quot;number&quot;></div>
@@ -1837,7 +1835,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <div class=&quot;g3&quot; style=&quot;margin-top:12px&quot;>
         <div class=&quot;f&quot;><label>Reflejo rotuliano D</label><select><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
         <div class=&quot;f&quot;><label>Reflejo rotuliano I</label><select><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
-        <div class=&quot;f&quot;><label>Reflejo aquíleo D</label><select><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div><div class=&quot;f&quot;><label>Reflejo aquíleo I</label><select data-k=&quot;n_rod_aqu_i&quot;><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
+        <div class=&quot;f&quot;><label>Reflejo aquíleo D</label><select><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
       </div>
     </div></div>
 
@@ -1880,7 +1878,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Desfavorable</option></select></div>
         <div class=&quot;f gc&quot;><label>Notas / contraindicaciones</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -1985,19 +1983,6 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Ninguna bandera roja identificada</label>
     </div></div></div></div>
 
-    <!-- 2b CUESTIONARIO BOURNEMOUTH (BQ) — PROM osteopático (v9) -->
-    <div class=&quot;fsec&quot;><div class=&quot;fh c-or ab&quot; onclick=&quot;tog(this,'osteo')&quot;><span class=&quot;fn&quot;>2b</span><span class=&quot;fi&quot;>📝</span><h3>Cuestionario Bournemouth (BQ) — resultado referido por el paciente</h3><span class=&quot;ft&quot;>▾</span></div>
-    <div class=&quot;fb ab&quot;>
-      <div class=&quot;rom-info&quot;><b>Para qué sirve:</b> PROM multidimensional de 7 ítems (0-10; total 0-70, mayor = peor) usado por el NCOR para medir resultados en osteopatía. Pásalo en la primera visita (basal) y en la reevaluación o alta. El paciente responde pensando en la <b>última semana</b>.</div>
-      <div class=&quot;g3&quot; style=&quot;margin-bottom:8px&quot;>
-        <div class=&quot;f&quot;><label>Fecha BQ basal</label><input type=&quot;date&quot; data-k=&quot;n_bq_fb&quot;></div>
-        <div class=&quot;f&quot;><label>Fecha BQ reevaluación</label><input type=&quot;date&quot; data-k=&quot;n_bq_fr&quot;></div>
-        <div class=&quot;f&quot;><label>Región del problema</label><input type=&quot;text&quot; data-k=&quot;n_bq_reg&quot; placeholder=&quot;Ej. lumbar, cervical...&quot;></div>
-      </div>
-      <table class=&quot;tabla bq-tabla v9-sin-normal&quot;><thead><tr><th>Ítem</th><th style=&quot;width:90px&quot;>Basal</th><th style=&quot;width:110px&quot;>Reevaluación</th></tr></thead><tbody id=&quot;bq-osteo&quot;><tr><td><b>1. Dolor</b><div class=&quot;bq-q&quot;>Durante la última semana, en promedio, ¿cómo calificaría su dolor?</div><div class=&quot;bq-anc&quot;>0 = Sin dolor · 10 = El peor dolor posible</div></td><td><select data-k=&quot;n_bq_b1&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r1&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>2. AVD</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cuánto ha interferido su problema en sus actividades diarias (tareas de casa, lavarse, vestirse, caminar, subir escaleras, acostarse/levantarse)?</div><div class=&quot;bq-anc&quot;>0 = Sin interferencia · 10 = Incapaz de realizarlas</div></td><td><select data-k=&quot;n_bq_b2&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r2&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>3. Social</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cuánto ha interferido su problema en sus actividades sociales, recreativas y familiares?</div><div class=&quot;bq-anc&quot;>0 = Sin interferencia · 10 = Incapaz de realizarlas</div></td><td><select data-k=&quot;n_bq_b3&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r3&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>4. Ansiedad</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cuán ansioso/a (tenso, nervioso, irritable, con dificultad para concentrarse o relajarse) se ha sentido?</div><div class=&quot;bq-anc&quot;>0 = Nada · 10 = Extremadamente</div></td><td><select data-k=&quot;n_bq_b4&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r4&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>5. Depresión</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cuán deprimido/a (desanimado, triste, pesimista, infeliz) se ha sentido?</div><div class=&quot;bq-anc&quot;>0 = Nada · 10 = Extremadamente</div></td><td><select data-k=&quot;n_bq_b5&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r5&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>6. Trabajo</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cómo cree que su trabajo (dentro o fuera de casa) ha afectado (o afectaría) a su problema?</div><div class=&quot;bq-anc&quot;>0 = No lo ha empeorado · 10 = Lo ha empeorado mucho</div></td><td><select data-k=&quot;n_bq_b6&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r6&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>7. Autocontrol</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cuánto ha podido controlar (reducir o ayudar) su problema por sí mismo/a?</div><div class=&quot;bq-anc&quot;>0 = Control total · 10 = Ningún control</div></td><td><select data-k=&quot;n_bq_b7&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r7&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr></tbody></table>
-      <div class=&quot;score-block&quot; id=&quot;bq-score&quot;><div><div class=&quot;sb-lab&quot;>Total BQ (0-70)</div><div class=&quot;bq-sub&quot; id=&quot;bq-sub&quot;>Basal — · Reevaluación —</div></div><div style=&quot;display:flex;align-items:baseline;gap:5px&quot;><span class=&quot;sb-val&quot; id=&quot;bq-delta&quot;>—</span></div><div class=&quot;sb-int&quot; id=&quot;bq-int&quot;>Pendiente</div></div>
-    </div></div>
-
     <!-- 03 ANTECEDENTES POR SISTEMAS — estilo EOM -->
     <div class=&quot;fsec&quot;><div class=&quot;fh c-or&quot; onclick=&quot;tog(this,'osteo')&quot;><span class=&quot;fn&quot;>03</span><span class=&quot;fi&quot;>📁</span><h3>Antecedentes familiares y personales por sistemas (estilo EOM)</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb&quot;>
@@ -2018,7 +2003,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <div class=&quot;sub or&quot; style=&quot;margin-top:14px&quot;>Datos complementarios</div>
       <div class=&quot;g2&quot;>
         <div class=&quot;f&quot;><label>Cirugías / intervenciones</label><input type=&quot;text&quot;></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Traumatismos relevantes</label><input type=&quot;text&quot;></div>
         <div class=&quot;f&quot;><label>Tratamientos osteopáticos previos</label><select><option value=&quot;&quot;>—</option><option>Ninguno</option><option>Sí, con buena respuesta</option><option>Sí, sin mejoría</option><option>Sí, con empeoramiento</option></select></div>
         <div class=&quot;f&quot;><label>Medicación actual</label><input type=&quot;text&quot;></div>
         <div class=&quot;f&quot;><label>Alergias</label><input type=&quot;text&quot;></div>
@@ -2090,7 +2075,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
 <!-- 05 TART - EVALUACIÓN OSTEOPÁTICA SEGMENTARIA -->
     <div class=&quot;fsec&quot;><div class=&quot;fh c-or ab&quot; onclick=&quot;tog(this,'osteo')&quot;><span class=&quot;fn&quot;>05</span><span class=&quot;fi&quot;>🔍</span><h3>TART — Evaluación osteopática segmentaria</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb ab&quot;>
-      <div class=&quot;rom-info&quot;><b>Marca interactiva:</b> haz clic en cada vértebra para registrar el grado de disfunción. La leyenda de colores y la lista de vértebras marcadas aparece debajo. Marca el nivel exacto aquí; la tabla TART de abajo caracteriza la región (no repitas la severidad).</div>
+      <div class=&quot;rom-info&quot;><b>Marca interactiva:</b> haz clic en cada vértebra para registrar el grado de disfunción. La leyenda de colores y la lista de vértebras marcadas aparece debajo. Esta evaluación complementa la tabla TART de más abajo.</div>
       <div class=&quot;eom-card&quot; style=&quot;margin-bottom:12px&quot;>
         <div class=&quot;ec-title&quot;><span>📍 Columna vertebral · marcación rápida</span><button class=&quot;btn sec&quot; style=&quot;padding:3px 9px;font-size:10px&quot; onclick=&quot;reset_eom('eom-spine')&quot;>Reset</button></div>
         <svg id=&quot;eom-spine&quot; viewBox=&quot;0 0 320 540&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;>
@@ -2098,7 +2083,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
           <text x=&quot;20&quot; y=&quot;130&quot; class=&quot;svg-region-label&quot;>Dorsal</text>
           <text x=&quot;20&quot; y=&quot;310&quot; class=&quot;svg-region-label&quot;>Lumbar</text>
           <text x=&quot;20&quot; y=&quot;450&quot; class=&quot;svg-region-label&quot;>Sacro</text>
-          <text x=&quot;200&quot; y=&quot;20&quot; class=&quot;svg-region-label&quot;>Vista posterior</text>
+          <text x=&quot;180&quot; y=&quot;20&quot; class=&quot;svg-region-label&quot;>Vista posterior</text>
         </svg>
         <div class=&quot;ec-leyenda&quot;><span><i class=&quot;li-n&quot;></i>Sin disfunción</span><span><i class=&quot;li-l&quot;></i>Leve</span><span><i class=&quot;li-m&quot;></i>Moderada</span><span><i class=&quot;li-s&quot;></i>Severa</span></div>
         <div class=&quot;eom-list&quot; id=&quot;eom-spine-list&quot;></div>
@@ -2302,20 +2287,20 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <div class=&quot;sub or&quot;>Evaluación abdominal</div>
       <div class=&quot;g3&quot;>
         <div class=&quot;f&quot;><label>Tensión abdominal general</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Distendido</option><option>Rígido</option><option>Defensa muscular</option></select></div>
-        
-        
-        
-        
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Movilidad hepática (hipocondrio D)</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Reducida</option><option>Dolorosa</option></select></div>
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Movilidad gástrica (epigastrio)</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Reducida</option><option>Dolorosa</option></select></div>
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Colon descendente (FII)</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Espástico</option><option>Flácido</option><option>Doloroso</option></select></div>
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Cecoapéndice (FID)</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Doloroso</option><option>Resistente</option></select></div>
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Vejiga / zona pélvica</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Tensión pélvica</option><option>Dolorosa</option></select></div>
       </div>
-      <div class=&quot;sub or&quot; style=&quot;margin-top:10px&quot;>Síntomas viscerales referidos</div>
+      <div class=&quot;sub or&quot; style=&quot;margin-top:10px&quot; hidden style=&quot;display:none&quot;>Síntomas viscerales referidos</div>
       <div class=&quot;cg3&quot;>
-        
-        
-        
-        
-        
-        
+        <label class=&quot;ci&quot; hidden style=&quot;display:none&quot;><input type=&quot;checkbox&quot;> Digestivos (reflujo, distensión, estreñimiento)</label>
+        <label class=&quot;ci&quot; hidden style=&quot;display:none&quot;><input type=&quot;checkbox&quot;> Ginecológicos / urológicos</label>
+        <label class=&quot;ci&quot; hidden style=&quot;display:none&quot;><input type=&quot;checkbox&quot;> Respiratorios (disnea funcional)</label>
+        <label class=&quot;ci&quot; hidden style=&quot;display:none&quot;><input type=&quot;checkbox&quot;> Náuseas / vértigos relacionados</label>
+        <label class=&quot;ci&quot; hidden style=&quot;display:none&quot;><input type=&quot;checkbox&quot;> Cefalea de origen visceral</label>
+        <label class=&quot;ci&quot; hidden style=&quot;display:none&quot;><input type=&quot;checkbox&quot;> Sin síntomas viscerales</label>
       </div>
       <div class=&quot;f gc&quot; style=&quot;margin-top:10px&quot;><label>Observaciones viscerales</label><textarea></textarea></div>
     </div></div>
@@ -2366,8 +2351,11 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
     <!-- 10 DIAGNÓSTICO Y PLAN OSTEOPÁTICO -->
     <div class=&quot;fsec&quot;><div class=&quot;fh c-or ab&quot; onclick=&quot;tog(this,'osteo')&quot;><span class=&quot;fn&quot;>10</span><span class=&quot;fi&quot;>📄</span><h3>Diagnóstico osteopático y plan de tratamiento</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb ab&quot;>
-            <div class=&quot;sub or&quot; style=&quot;margin-top:14px&quot;>EVA post-tratamiento</div><div class=&quot;hint&quot; style=&quot;margin-bottom:4px&quot;>La EVA pre-tratamiento es la registrada en la sección 02 (no se vuelve a preguntar). Δ automático.</div>
-      <div id=&quot;eva-osteo-post&quot; class=&quot;eva-wrap&quot;></div>
+            <div class=&quot;sub or&quot; style=&quot;margin-top:14px&quot;>EVA post tratamiento (la EVA pre es la de la sección 02)</div>
+      <div class=&quot;eva-pre-post&quot;>
+        <div id=&quot;eva-osteo-pre&quot; class=&quot;eva-wrap&quot; hidden style=&quot;display:none&quot;></div>
+        <div id=&quot;eva-osteo-post&quot; class=&quot;eva-wrap&quot;></div>
+      </div>
       <div class=&quot;eva-delta&quot; id=&quot;eva-osteo-delta&quot;>Pendiente — selecciona dolor pre y post para calcular Δ</div>
       <div class=&quot;diag-box or&quot;><label>Diagnóstico osteopático principal</label><input type=&quot;text&quot; placeholder=&quot;Ej. Disfunción sacra en torsión D/D + restricción diafragmática + hipertonía psoas I...&quot;></div>
       <div class=&quot;g2&quot;>
@@ -2397,7 +2385,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Desfavorable</option></select></div>
         <div class=&quot;f gc&quot;><label>Notas / precauciones / contraindicaciones</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -2559,7 +2547,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
     <div class=&quot;fsec&quot;><div class=&quot;fh c-cy&quot; onclick=&quot;tog(this,'cervical')&quot;><span class=&quot;fn&quot;>09</span><span class=&quot;fi&quot;>📊</span><h3>Escalas funcionales validadas</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb&quot;><div class=&quot;g2&quot;>
       <div class=&quot;f&quot;><label>NDI — Neck Disability Index (%)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;><div class=&quot;hint&quot;>0-8% sin discapacidad · 10-28% leve · 30-48% moderada · 50-64% severa · ≥65% completa</div></div>
-      
+      <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>NPRS — Numerical Pain Rating 0-10</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;><div class=&quot;hint&quot;>MCID: cambio ≥2 puntos en dolor cervical</div></div>
       <div class=&quot;f&quot;><label>PSFS — Specific Functional Scale (0-10)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;><div class=&quot;hint&quot;>Actividad 1 elegida por paciente</div></div>
       <div class=&quot;f&quot;><label>Actividad PSFS elegida por el paciente</label><input type=&quot;text&quot; placeholder=&quot;Ej. Conducir, trabajar en pantalla...&quot;></div>
       <div class=&quot;f&quot;><label>FABQ (Fear-Avoidance Beliefs) Trabajo (0-42)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;42&quot;><div class=&quot;hint&quot;>≥34 alto riesgo de cronificación por trabajo</div></div>
@@ -2599,7 +2587,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Desfavorable</option></select></div>
         <div class=&quot;f gc&quot;><label>Notas / contraindicaciones</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -2741,16 +2729,24 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
 
 
     <!-- 7b MARCHA TINETTI + EQUILIBRIO — Running (v7) -->
-    
+    <div class=&quot;fsec&quot;><div class=&quot;fh c-el&quot; onclick=&quot;tog(this,'running')&quot;><span class=&quot;fn&quot;>7b</span><span class=&quot;fi&quot;>🚶</span><h3>Análisis de marcha (Tinetti) y batería de equilibrio</h3><span class=&quot;ft&quot;>▾</span></div>
+    <div class=&quot;fb&quot;>
+      <div class=&quot;sub el&quot;>Marcha — Tinetti</div>
+      <table class=&quot;tinetti-tabla&quot;><thead><tr><th style=&quot;width:60%&quot;>Criterio</th><th>Opciones (puntuación)</th></tr></thead><tbody id=&quot;tin-running&quot;></tbody></table>
+      <div class=&quot;score-block&quot; id=&quot;tin-running-score&quot;><div><div class=&quot;sb-lab&quot;>Puntuación marcha</div></div><div style=&quot;display:flex;align-items:baseline;gap:5px&quot;><span class=&quot;sb-val&quot;>0</span><span class=&quot;sb-max&quot;>/ 12</span></div><div class=&quot;sb-int&quot;>Pendiente</div></div>
+      <div class=&quot;sub el&quot; style=&quot;margin-top:14px&quot;>Equilibrio</div>
+      <div id=&quot;eq-running&quot; style=&quot;border:1px solid var(--borde);border-radius:7px;overflow:hidden&quot;></div>
+      <div class=&quot;score-block&quot; id=&quot;eq-running-score&quot;><div><div class=&quot;sb-lab&quot;>Score equilibrio</div></div><div style=&quot;display:flex;align-items:baseline;gap:5px&quot;><span class=&quot;sb-val&quot;>0</span><span class=&quot;sb-max&quot;>/ 7</span></div><div class=&quot;sb-int&quot;>Pendiente</div></div>
+    </div></div>
 
     <!-- 08 NEUROLÓGICO (si aplica) -->
     <div class=&quot;fsec&quot;><div class=&quot;fh c-el&quot; onclick=&quot;tog(this,'running')&quot;><span class=&quot;fn&quot;>08</span><span class=&quot;fi&quot;>⚡</span><h3>Evaluación neurológica (si aplica)</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb&quot;><div class=&quot;g2&quot;>
       <div class=&quot;f&quot;><label>Síntomas neurológicos</label><select><option value=&quot;&quot;>—</option><option>Ninguno</option><option>Parestesias MMII</option><option>Síndrome compartimental</option><option>Atrapamiento nervio peroneo</option><option>Síndrome del seno del tarso</option></select></div>
-      <div class=&quot;f&quot;><label>Reflejo rotuliano D</label><select><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
-      <div class=&quot;f&quot;><label>Reflejo rotuliano I</label><select><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
-      <div class=&quot;f&quot;><label>Reflejo aquíleo D</label><select><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
-      <div class=&quot;f&quot;><label>Reflejo aquíleo I</label><select><option value=&quot;&quot;>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
+      <div class=&quot;f&quot;><label>Reflejo rotuliano D</label><select><option value=&quot;&quot;>—</option><option>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
+      <div class=&quot;f&quot;><label>Reflejo rotuliano I</label><select><option value=&quot;&quot;>—</option><option>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
+      <div class=&quot;f&quot;><label>Reflejo aquíleo D</label><select><option value=&quot;&quot;>—</option><option>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
+      <div class=&quot;f&quot;><label>Reflejo aquíleo I</label><select><option value=&quot;&quot;>—</option><option>—</option><option>0 Abolido</option><option>+1 Disminuido</option><option>+2 Normal</option><option>+3 Aumentado</option></select></div>
       <div class=&quot;f gc&quot;><label>Observaciones neurológicas</label><textarea></textarea></div>
     </div></div></div>
 
@@ -2806,7 +2802,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Fecha retorno entrenamiento estimada</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Fecha retorno competición estimada</label><input type=&quot;date&quot;></div>
         <div class=&quot;f gc&quot;><label>Plan de entrenamiento adaptado / notas</label><textarea placeholder=&quot;Km/semana permitidos, restricciones por tipo de sesión...&quot;></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -2951,7 +2947,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <div class=&quot;g3&quot; style=&quot;margin-top:12px&quot;>
         <div class=&quot;f&quot;><label>Marcha antiálgica</label><select><option value=&quot;&quot;>—</option><option>No</option><option>Sí D</option><option>Sí I</option></select></div>
         <div class=&quot;f&quot;><label>Marcha de Trendelenburg en marcha</label><select><option value=&quot;&quot;>—</option><option>No</option><option>Sí D (positiva)</option><option>Sí I (positiva)</option><option>Bilateral</option></select></div>
-        <div class=&quot;f&quot;><label>Test de Drehmann</label><select><option value=&quot;&quot;>—</option><option>Negativo</option><option>Positivo D</option><option>Positivo I</option></select></div>
+        <div class=&quot;f&quot;><label>Test de Drehmann</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Negativo</option><option>Positivo D</option><option>Positivo I</option></select></div>
       </div>
     </div></div>
 
@@ -3007,9 +3003,9 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <div class=&quot;f&quot;><label>WOMAC (/96 invertido)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;96&quot;><div class=&quot;hint&quot;>↑ peor · subescalas: dolor (20), rigidez (8), función (68) — gold standard coxartrosis</div></div>
       <div class=&quot;f&quot;><label>Oxford Hip Score (OHS) /48</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;48&quot;><div class=&quot;hint&quot;>↑ mejor · &amp;lt;27 severo · 27-33 mod-severo · 34-41 mod · &amp;gt;42 leve</div></div>
       <div class=&quot;f&quot;><label>Tegner Activity Scale (0-10)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;><div class=&quot;hint&quot;>Nivel actividad: 0 baja por discapacidad · 10 fútbol/ski competitivo</div></div>
-      
+      <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>NPRS dolor actual (0-10)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;><div class=&quot;hint&quot;>MCID cambio ≥2 puntos</div></div>
       <div class=&quot;f&quot;><label>Lower Extremity Functional Scale (LEFS) /80</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;80&quot;></div>
-      <div class=&quot;f&quot;><label>TSK-17 Tampa — kinesiofobia (17-68)</label><input type=&quot;number&quot; min=&quot;17&quot; max=&quot;68&quot;></div>
+      <div class=&quot;f&quot;><label>FABQ — kinesiofobia (17-68)</label><input type=&quot;number&quot; min=&quot;17&quot; max=&quot;68&quot;></div>
       <div class=&quot;f&quot;><label>Funcionalidad laboral / AVD</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Trabajo / AVD adaptado</option><option>Baja parcial</option><option>Baja total</option></select></div>
     </div></div></div>
 
@@ -3086,7 +3082,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Pronóstico</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Desfavorable</option></select></div>
         <div class=&quot;f gc&quot;><label>Precauciones / contraindicaciones específicas</label><textarea placeholder=&quot;Ej. Post-PTC posterior: no flexión &amp;gt;90°, no rotación interna, no aducción cruzada × 6 semanas. Cargar progresivamente. Vigilar dolor inguinal súbito.&quot;></textarea></div>
         <div class=&quot;f gc&quot;><label>Notas / plan domiciliario</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -3188,7 +3184,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
     <div class=&quot;fsec&quot;><div class=&quot;fh c-na&quot; onclick=&quot;tog(this,'codo')&quot;><span class=&quot;fn&quot;>05</span><span class=&quot;fi&quot;>👁</span><h3>Inspección y palpación</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb&quot;>
       <div class=&quot;g3&quot;>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Ángulo de carga (codo extendido)</label><select><option value=&quot;&quot;>—</option><option>Normal valgo fisiológico (5-15°)</option><option>Cubitus valgo aumentado</option><option>Cubitus varo</option><option>Recurvatum</option></select></div>
         <div class=&quot;f&quot;><label>Tumefacción</label><select><option value=&quot;&quot;>—</option><option>Sin tumefacción</option><option>Olécranon (bursitis)</option><option>Fosa cubital anterior</option><option>Difusa global</option></select></div>
         <div class=&quot;f&quot;><label>Cicatrices / atrofia</label><input type=&quot;text&quot;></div>
         <div class=&quot;f&quot;><label>Temperatura local</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Aumentada (inflamatoria)</option><option>Disminuida</option></select></div>
@@ -3226,9 +3222,9 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <tbody id=&quot;tests-codo-hc&quot;></tbody>
       </table>
       <div class=&quot;g3&quot; style=&quot;margin-top:12px&quot;>
-        <div class=&quot;f&quot;><label>Inestabilidad valgo en 30° flex</label><select><option value=&quot;&quot;>—</option><option>Negativa</option><option>Sospecha laxitud</option><option>Inestabilidad franca</option></select></div>
-        <div class=&quot;f&quot;><label>Inestabilidad varo</label><select><option value=&quot;&quot;>—</option><option>Negativa</option><option>Sospecha</option><option>Franca</option></select></div>
-        
+        <div class=&quot;f&quot;><label>Inestabilidad valgo en 30° flex</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Negativa</option><option>Sospecha laxitud</option><option>Inestabilidad franca</option></select></div>
+        <div class=&quot;f&quot;><label>Inestabilidad varo</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Negativa</option><option>Sospecha</option><option>Franca</option></select></div>
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Pivot-shift posterolateral</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Negativo</option><option>Positivo</option></select></div>
       </div>
     </div></div>
 
@@ -3264,10 +3260,10 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <div class=&quot;f&quot;><label>MEPS — Mayo Elbow Performance Score (0-100)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;><div class=&quot;hint&quot;>Dolor 45 + ROM 20 + estab. 10 + función 25 · &amp;gt;90 excelente · 75-89 bueno · 60-74 regular · &amp;lt;60 pobre</div></div>
       <div class=&quot;f&quot;><label>QuickDASH (0-100)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;><div class=&quot;hint&quot;>11 ítems · ↓ mejor · MCID ~16 puntos · MDC ~12</div></div>
       <div class=&quot;f&quot;><label>OES — Oxford Elbow Score (0-48)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;48&quot;><div class=&quot;hint&quot;>↑ mejor · dolor, función, social-psicológico</div></div>
-      
+      <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>NPRS dolor actual (0-10)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;><div class=&quot;hint&quot;>MCID ≥2 puntos</div></div>
       <div class=&quot;f&quot;><label>Fuerza prensión libre dolor (kg)</label><input type=&quot;number&quot; step=&quot;0.1&quot;><div class=&quot;hint&quot;>Medir hasta inicio dolor</div></div>
       <div class=&quot;f&quot;><label>Funcionalidad laboral / deportiva</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Adaptada</option><option>Baja parcial</option><option>Baja total</option></select></div>
-      <div class=&quot;f&quot;><label>TSK-17 Tampa — kinesiofobia (17-68)</label><input type=&quot;number&quot; min=&quot;17&quot; max=&quot;68&quot;></div>
+      <div class=&quot;f&quot;><label>FABQ — kinesiofobia (17-68)</label><input type=&quot;number&quot; min=&quot;17&quot; max=&quot;68&quot;></div>
     </div></div></div>
 
     <!-- 11 DIAGNÓSTICO Y PLAN -->
@@ -3333,7 +3329,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Desfavorable</option></select></div>
         <div class=&quot;f gc&quot;><label>Precauciones / notas</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -3474,9 +3470,9 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <tbody id=&quot;tests-muneca-hc&quot;></tbody>
       </table>
       <div class=&quot;g3&quot; style=&quot;margin-top:12px&quot;>
-        
-        <div class=&quot;f&quot;><label>Signo de Flick (sacudida)</label><select><option value=&quot;&quot;>—</option><option>Negativo</option><option>Positivo (sugiere STC)</option></select></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Allen test (vascular)</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Normal bilateral (&amp;lt;5s recoloración)</option><option>Anormal D — arteria radial</option><option>Anormal D — arteria cubital</option><option>Anormal I — radial</option><option>Anormal I — cubital</option></select></div>
+        <div class=&quot;f&quot;><label>Signo de Flick (sacudida)</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Negativo</option><option>Positivo (sugiere STC)</option></select></div>
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Atrofia tenar visible</label><select><option value=&quot;&quot;>—</option><option>No</option><option>Sí — leve</option><option>Sí — severa (STC avanzado)</option></select></div>
       </div>
     </div></div>
 
@@ -3489,8 +3485,8 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Sensibilidad pulpejo 5° dedo (cubital)</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>↓ leve</option><option>↓ severa</option><option>Anestesia</option></select></div>
         <div class=&quot;f&quot;><label>Discriminación 2 puntos (mm)</label><input type=&quot;number&quot; placeholder=&quot;Normal &amp;lt;5mm&quot;></div>
         <div class=&quot;f&quot;><label>Monofilamentos Semmes-Weinstein</label><select><option value=&quot;&quot;>—</option><option>Normal (verde)</option><option>↓ sensibilidad ligera (azul)</option><option>↓ protectora (morado)</option><option>↓ profunda (rojo)</option><option>Ausencia (naranja)</option></select></div>
-        <div class=&quot;f&quot;><label>Signo de Froment (cubital)</label><select><option value=&quot;&quot;>—</option><option>Negativo</option><option>Positivo D</option><option>Positivo I</option></select></div>
-        <div class=&quot;f&quot;><label>Signo de Wartenberg (cubital)</label><select><option value=&quot;&quot;>—</option><option>Negativo</option><option>Positivo D</option><option>Positivo I</option></select></div>
+        <div class=&quot;f&quot;><label>Signo de Froment (cubital)</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Negativo</option><option>Positivo D</option><option>Positivo I</option></select></div>
+        <div class=&quot;f&quot;><label>Signo de Wartenberg (cubital)</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Negativo</option><option>Positivo D</option><option>Positivo I</option></select></div>
       </div>
     </div></div>
 
@@ -3516,7 +3512,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <div class=&quot;f&quot;><label>DASH — Disability Arm Shoulder Hand (0-100)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;><div class=&quot;hint&quot;>30 ítems · ↓ mejor · MDC 10.8 · MCID 10-15</div></div>
       <div class=&quot;f&quot;><label>QuickDASH (0-100)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;><div class=&quot;hint&quot;>11 ítems · ↓ mejor</div></div>
       <div class=&quot;f&quot;><label>PRTEE-W (versión muñeca, 0-100)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;></div>
-      
+      <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>NPRS dolor actual (0-10)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;></div>
       <div class=&quot;f&quot;><label>Funcionalidad laboral</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Adaptada</option><option>Baja parcial</option><option>Baja total</option></select></div>
     </div></div></div>
 
@@ -3583,7 +3579,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Desfavorable</option></select></div>
         <div class=&quot;f gc&quot;><label>Precauciones / notas</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -3640,7 +3636,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Mecanismo</label><select><option value=&quot;&quot;>—</option><option>Traumático (impacto, esguince dedo)</option><option>Insidioso / sobrecarga</option><option>Post-quirúrgico</option><option>Hormonal / metabólico</option><option>Hereditario (Dupuytren)</option><option>Asociado a AR / artrosis</option></select></div>
         <div class=&quot;f&quot;><label>Síntomas predominantes</label><select><option value=&quot;&quot;>—</option><option>Dolor mecánico</option><option>Rigidez matutina</option><option>Bloqueo / resorte (gatillo)</option><option>Pérdida de extensión</option><option>Deformidad progresiva</option><option>Pérdida de fuerza</option><option>Nódulos palpables</option></select></div>
         <div class=&quot;f&quot;><label>Localización principal</label><select><option value=&quot;&quot;>—</option><option>Base 1° dedo (rizartrosis)</option><option>IFD (Heberden)</option><option>IFP (Bouchard)</option><option>MCF</option><option>Aponeurosis palmar (Dupuytren)</option><option>Polea A1 (gatillo)</option><option>Falange distal (mallet)</option><option>IFP central (Boutonnière)</option></select></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Mano predominante en actividades</label><select><option value=&quot;&quot;>—</option><option>Sin afectación funcional</option><option>Afecta tareas finas (pinza, escritura)</option><option>Afecta tareas de fuerza</option><option>Afecta ambas</option></select></div>
         <div class=&quot;f&quot;><label>Factores agravantes</label><input type=&quot;text&quot; placeholder=&quot;Frío, esfuerzo, cerrar puño, agarrar objetos...&quot;></div>
         <div class=&quot;f&quot;><label>Factores aliviadores</label><input type=&quot;text&quot; placeholder=&quot;Calor, reposo, férula, AINE...&quot;></div>
       </div>
@@ -3722,7 +3718,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <table class=&quot;rom-tabla&quot;><thead><tr><th>Articulación / dedo</th><th>Rango funcional</th><th>Act D</th><th>Act I</th><th>Pas D</th><th>Pas I</th><th>Dolor</th><th>End-feel</th><th>Observación</th></tr></thead><tbody id=&quot;rom-dedos&quot;></tbody></table>
       <div class=&quot;g3&quot; style=&quot;margin-top:10px&quot;>
         <div class=&quot;f&quot;><label>Distancia pulpejo-palma (cm)</label><input type=&quot;text&quot; placeholder=&quot;D / I por dedo&quot;><div class=&quot;hint&quot;>Funcional &amp;lt;1 cm</div></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Test de Kapandji (pulgar, 0-10)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;><div class=&quot;hint&quot;>Oposición · 10 = punta a base 5° dedo</div></div>
         <div class=&quot;f&quot;><label>TAM total dedos (°)</label><input type=&quot;text&quot; placeholder=&quot;Por dedo: ej. 240° normal&quot;></div>
       </div>
     </div></div>
@@ -3734,9 +3730,9 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <tbody id=&quot;tests-mano-hc&quot;></tbody>
       </table>
       <div class=&quot;g3&quot; style=&quot;margin-top:12px&quot;>
-        
-        <div class=&quot;f&quot;><label>Capacidad de oposición</label><select><option value=&quot;&quot;>—</option><option>Completa</option><option>Incompleta</option><option>Ausente</option></select></div>
-        <div class=&quot;f&quot;><label>Capacidad de pinza tripoidal</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>↓ leve</option><option>↓ severa</option><option>Imposible</option></select></div>
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Allen test digital (vascular dedo)</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Normal</option><option>Anormal</option></select></div>
+        <div class=&quot;f&quot;><label>Capacidad de oposición</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Completa</option><option>Incompleta</option><option>Ausente</option></select></div>
+        <div class=&quot;f&quot;><label>Capacidad de pinza tripoidal</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Normal</option><option>↓ leve</option><option>↓ severa</option><option>Imposible</option></select></div>
       </div>
     </div></div>
 
@@ -3777,7 +3773,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <div class=&quot;f&quot;><label>PRWHE — Pat Rated Wrist/Hand Eval (0-100)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;></div>
       <div class=&quot;f&quot;><label>AUSCAN — Index manos artrosis (0-60)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;60&quot;><div class=&quot;hint&quot;>Específica artrosis mano (Heberden/Bouchard)</div></div>
       <div class=&quot;f&quot;><label>SF-Mc-Gill dolor (0-78)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;78&quot;></div>
-      
+      <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>NPRS dolor actual (0-10)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;></div>
       <div class=&quot;f&quot;><label>Capacidad para AVD (Barthel mano-específico)</label><select><option value=&quot;&quot;>—</option><option>Independiente</option><option>Mínima asistencia</option><option>Moderada asistencia</option><option>Dependiente</option></select></div>
     </div></div></div>
 
@@ -3848,7 +3844,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Desfavorable</option></select></div>
         <div class=&quot;f gc&quot;><label>Precauciones / notas</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -3970,7 +3966,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Posición 1ª cabeza MT</label><select><option value=&quot;&quot;>—</option><option>Plantarflexionada</option><option>Neutra</option><option>Dorsiflex (hallux rigidus)</option></select></div>
         <div class=&quot;f&quot;><label>Hallux</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Hallux valgus (HAV)</option><option>Hallux rigidus</option><option>Hallux varus</option></select></div>
         <div class=&quot;f&quot;><label>Dedos</label><select><option value=&quot;&quot;>—</option><option>Normales</option><option>Garra</option><option>Martillo</option><option>Mazo</option><option>Quintus varus</option></select></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Test Jack (windlass) bipedestación</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Positivo (arco se eleva)</option><option>Negativo</option></select></div>
         <div class=&quot;f&quot;><label>Foot Posture Index (FPI-6, -12 a +12)</label><input type=&quot;number&quot; min=&quot;-12&quot; max=&quot;12&quot;><div class=&quot;hint&quot;>-4 a +5 normal · ≥+6 pronado · ≤-5 supinado</div></div>
         <div class=&quot;f&quot;><label>Navicular drop (mm)</label><input type=&quot;number&quot;><div class=&quot;hint&quot;>≥10mm = hiperpronación</div></div>
         <div class=&quot;f&quot;><label>Helbing line (eje retropié)</label><select><option value=&quot;&quot;>—</option><option>Recta</option><option>Desviada en valgo</option><option>Desviada en varo</option></select></div>
@@ -4011,8 +4007,8 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <table class=&quot;rom-tabla&quot;><thead><tr><th>Movimiento</th><th>Rango funcional</th><th>Act D</th><th>Act I</th><th>Pas D</th><th>Pas I</th><th>Dolor</th><th>End-feel</th><th>Observación</th></tr></thead><tbody id=&quot;rom-pie-hc&quot;></tbody></table>
       <div class=&quot;g3&quot; style=&quot;margin-top:10px&quot;>
         <div class=&quot;f&quot;><label>Weight-bearing lunge test (cm)</label><input type=&quot;number&quot; step=&quot;0.1&quot;><div class=&quot;hint&quot;>Funcional ≥10 cm · LSI ≥90%</div></div>
-        <div class=&quot;f&quot;><label>Silfverskiöld test (rodilla flex/ext)</label><select><option value=&quot;&quot;>—</option><option>Negativo</option><option>Positivo gastrocnemio</option><option>Positivo gastro+sóleo</option></select></div>
-        <div class=&quot;f&quot;><label>Coleman block test (cavo)</label><select><option value=&quot;&quot;>—</option><option>Negativo</option><option>Retropié reductible</option><option>Retropié rígido</option></select></div>
+        <div class=&quot;f&quot;><label>Silfverskiöld test (rodilla flex/ext)</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Negativo</option><option>Positivo gastrocnemio</option><option>Positivo gastro+sóleo</option></select></div>
+        <div class=&quot;f&quot;><label>Coleman block test (cavo)</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Negativo</option><option>Retropié reductible</option><option>Retropié rígido</option></select></div>
       </div>
     </div></div>
 
@@ -4034,7 +4030,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Babinski D</label><select><option value=&quot;&quot;>—</option><option>Flexor (normal)</option><option>Indiferente</option><option>Extensor (patológico)</option></select></div>
         <div class=&quot;f&quot;><label>Babinski I</label><select><option value=&quot;&quot;>—</option><option>Flexor</option><option>Indiferente</option><option>Extensor</option></select></div>
         <div class=&quot;f&quot;><label>Monofilamento 10g (Semmes-Weinstein) — DM</label><select><option value=&quot;&quot;>—</option><option>Normal todos los puntos</option><option>↓ 1-2 puntos</option><option>↓ ≥3 puntos (neuropatía)</option></select></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Tinel posterior tibial (canal tarso)</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Negativo</option><option>Positivo D</option><option>Positivo I</option></select></div>
       </div>
     </div></div>
 
@@ -4062,7 +4058,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <div class=&quot;f&quot;><label>FFI — Foot Function Index (0-100)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;><div class=&quot;hint&quot;>↓ mejor · fascitis plantar</div></div>
       <div class=&quot;f&quot;><label>VISA-A (Aquíleo, 0-100)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;><div class=&quot;hint&quot;>↑ mejor</div></div>
       <div class=&quot;f&quot;><label>LEFS — Lower Extremity Functional (0-80)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;80&quot;></div>
-      
+      <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>NPRS dolor actual (0-10)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;></div>
     </div></div></div>
 
     <!-- 11 DIAGNÓSTICO + PLAN -->
@@ -4141,7 +4137,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Desfavorable</option></select></div>
         <div class=&quot;f gc&quot;><label>Precauciones / notas</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -4327,13 +4323,13 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
     <!-- 10 ESCALAS -->
     <div class=&quot;fsec&quot;><div class=&quot;fh c-az&quot; onclick=&quot;tog(this,'dorsal')&quot;><span class=&quot;fn&quot;>10</span><span class=&quot;fi&quot;>📊</span><h3>Escalas funcionales validadas</h3><span class=&quot;ft&quot;>▾</span></div>
     <div class=&quot;fb&quot;><div class=&quot;g2&quot;>
-      
+      <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>NPRS (0-10)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;10&quot;></div>
       <div class=&quot;f&quot;><label>Oswestry Disability Index (%)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;><div class=&quot;hint&quot;>Adaptable a dorsal</div></div>
       <div class=&quot;f&quot;><label>Roland Morris (/24)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;24&quot;></div>
       <div class=&quot;f&quot;><label>BASDAI (Bath Ankylosing Spondylitis, 0-10)</label><input type=&quot;number&quot; step=&quot;0.1&quot; min=&quot;0&quot; max=&quot;10&quot;><div class=&quot;hint&quot;>&amp;gt;4 enfermedad activa · sospecha EA</div></div>
       <div class=&quot;f&quot;><label>BASFI (función EA, 0-10)</label><input type=&quot;number&quot; step=&quot;0.1&quot; min=&quot;0&quot; max=&quot;10&quot;></div>
-      
-      <div class=&quot;f&quot;><label>SRS-22r (puntuación media 1-5)</label><input type=&quot;number&quot; min=&quot;1&quot; max=&quot;5&quot; step=&quot;0.1&quot;></div>
+      <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Cobb (°) si Rx</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;100&quot;></div>
+      <div class=&quot;f&quot;><label>SRS-22 (Scoliosis Research Society, 5-22)</label><input type=&quot;number&quot; min=&quot;5&quot; max=&quot;22&quot;></div>
       <div class=&quot;f&quot;><label>Tampa Kinesiofobia (17-68)</label><input type=&quot;number&quot; min=&quot;17&quot; max=&quot;68&quot;></div>
       <div class=&quot;f&quot;><label>FABQ trabajo (0-42)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;42&quot;></div>
       <div class=&quot;f&quot;><label>Funcionalidad laboral</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Adaptada</option><option>Baja parcial</option><option>Baja total</option></select></div>
@@ -4400,7 +4396,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Desfavorable</option></select></div>
         <div class=&quot;f gc&quot;><label>Notas</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -4537,7 +4533,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <div class=&quot;f&quot;><label>Silla de ruedas</label><select><option value=&quot;&quot;>—</option><option>No usa</option><option>Manual estándar</option><option>Manual activa</option><option>Eléctrica</option><option>Adaptada deportiva</option></select></div>
       <div class=&quot;f&quot;><label>Bipedestación</label><select><option value=&quot;&quot;>—</option><option>No</option><option>Con ortesis (RGO, KAFO)</option><option>Con andador</option><option>Independiente</option></select></div>
       <div class=&quot;f&quot;><label>Marcha</label><select><option value=&quot;&quot;>—</option><option>No</option><option>Marcha terapéutica</option><option>Doméstica con ayudas</option><option>Comunitaria limitada</option><option>Funcional comunitaria</option></select></div>
-      
+      <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>WISCI II (0-20)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;20&quot;><div class=&quot;hint&quot;>↑ mejor capacidad marcha</div></div>
       <div class=&quot;f&quot;><label>10MWT (s)</label><input type=&quot;number&quot; step=&quot;0.1&quot;></div>
       <div class=&quot;f&quot;><label>6MWT (m)</label><input type=&quot;number&quot;></div>
       <div class=&quot;f&quot;><label>Traslados independientes</label><select><option value=&quot;&quot;>—</option><option>Sí — sin ayuda</option><option>Con tabla</option><option>Asistencia parcial</option><option>Asistencia total</option><option>Grúa</option></select></div>
@@ -4570,7 +4566,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Trombosis venosa profunda activa</label>
       <label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Infección urinaria recurrente</label>
       <label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Osteoporosis sublesional</label>
-      
+      <label class=&quot;ci&quot; hidden style=&quot;display:none&quot;><input type=&quot;checkbox&quot;> Disfunción respiratoria</label>
       <label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Síndrome de siringomielia (postraumático)</label>
       <label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Depresión / trastorno adaptativo</label>
       <label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Caída reciente</label>
@@ -4622,7 +4618,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación ASIA</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico funcional</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Estacionario</option></select></div>
         <div class=&quot;f gc&quot;><label>Plan domiciliario / cuidador</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -4764,7 +4760,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Rigidez en rueda dentada (Parkinson)</label><select><option value=&quot;&quot;>—</option><option>No</option><option>D</option><option>I</option><option>Bilateral</option></select></div>
         <div class=&quot;f&quot;><label>Temblor (UPDRS, 0-4)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;4&quot;></div>
         <div class=&quot;f&quot;><label>Bradicinesia (0-4)</label><input type=&quot;number&quot; min=&quot;0&quot; max=&quot;4&quot;></div>
-        <div class=&quot;f&quot;><label>Pull test (retropulsión)</label><select><option value=&quot;&quot;>—</option><option>Normal</option><option>Recupera 1-2 pasos</option><option>Recupera con ayuda</option><option>Caería sin ayuda</option></select></div>
+        <div class=&quot;f&quot;><label>Pull test (retropulsión)</label><select><option value=&quot;&quot;>—</option><option>—</option><option>Normal</option><option>Recupera 1-2 pasos</option><option>Recupera con ayuda</option><option>Caería sin ayuda</option></select></div>
       </div>
     </div></div>
 
@@ -4891,7 +4887,7 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
         <div class=&quot;f&quot;><label>Próxima reevaluación</label><input type=&quot;date&quot;></div>
         <div class=&quot;f&quot;><label>Pronóstico funcional</label><select><option value=&quot;&quot;>—</option><option>Favorable</option><option>Reservado</option><option>Estacionario</option><option>Progresivo (degenerativo)</option></select></div>
         <div class=&quot;f gc&quot;><label>Plan domiciliario / cuidador</label><textarea></textarea></div>
-        
+        <div class=&quot;f&quot; hidden style=&quot;display:none&quot;><label>Firma terapeuta</label><input type=&quot;text&quot;></div>
       </div>
     </div></div>
 
@@ -5168,6 +5164,7 @@ const testsCadera = [
   {t:'Log Roll (rodada del miembro)',       e:'Específico para cápsula articular cadera'},
   {t:'Squeeze test (aductores)',            e:'Pubalgia / lesión aductora'},
   {t:'Resisted Sit-Up',                     e:'Pubalgia inguinal (atletas)'},
+  {t:'Test de Lasègue / SLR',               e:'Diferencial radicular vs. cadera'},
   {t:'Snapping interno (psoas)',            e:'Cadera resorte interna'},
   {t:'Snapping externo (cintilla IT)',      e:'Cadera resorte externa / coxa saltans'},
 ];
@@ -5325,7 +5322,7 @@ function exportarJSON(tipo) {
     if (inp &amp;&amp; inp.value.trim()) nombre = inp.value.trim().replace(/\s+/g,'_').toLowerCase();
   }
   const fecha = new Date().toISOString().split('T')[0];
-  const obj = { portal: tipo, nombre, fecha, version: '9.0', datos };
+  const obj = { portal: tipo, nombre, fecha, version: '7.0', datos };
   const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -5339,15 +5336,9 @@ function importarJSON(ev) {
   if (!file) return;
   const tipoDestino = ev.target.dataset.tipo;
   const r = new FileReader();
-  r.onload = async (e) => {
+  r.onload = (e) => {
     try {
-      let obj = JSON.parse(e.target.result);
-      if (obj.formato === 'portal-clinico-cifrado') {
-        const pw = prompt('Esta historia está cifrada. Introduce la contraseña que te dio el profesional:');
-        if (!pw) { ev.target.value = ''; return; }
-        try { obj = await v9Descifrar(obj, pw); }
-        catch (x) { alert('Contraseña incorrecta o archivo dañado.'); ev.target.value = ''; return; }
-      }
+      const obj = JSON.parse(e.target.result);
       if (!obj.datos) { alert('Archivo JSON inválido.'); return; }
       if (obj.portal &amp;&amp; obj.portal !== tipoDestino) {
         if (!confirm(`Archivo del portal &quot;${obj.portal}&quot; → &quot;${tipoDestino}&quot;. Continuar?`)) return;
@@ -5405,10 +5396,8 @@ function buildTests(tbodyId, tests) {
 let _currentTipo = null;
 
 function abrir(tipo) {
-  const prev = _currentTipo;
   _currentTipo = tipo;
   mostrarPortal('p-' + tipo);
-  v9AlAbrir(tipo, prev);
   const fd = document.getElementById('fecha-' + tipo);
   if (fd) fd.textContent = new Date().toLocaleDateString('es-ES', {day:'2-digit',month:'long',year:'numeric'});
 }
@@ -5511,7 +5500,7 @@ function abrirGuardar(tipo) {
   m.style.display = 'flex';
   m.dataset.tipo = tipo;
   const inp = document.getElementById('savePatientName');
-  if (inp) { inp.value = v9NombrePaciente(tipo); setTimeout(() => inp.focus(), 80); }
+  if (inp) { inp.value = ''; setTimeout(() => inp.focus(), 80); }
 }
 
 function abrirCargar(tipo) {
@@ -5557,9 +5546,7 @@ function confirmarGuardar() {
   const portalId = 'p-' + tipo;
   const datos = serializarPortal(portalId);
   const key = 'pt_' + tipo + '_' + nombre.replace(/\s+/g,'_').toLowerCase();
-  localStorage.setItem(key, JSON.stringify({nombre, tipo, fecha: new Date().toISOString(), version: 9, datos}));
-  borrarBorrador(tipo);
-  try { if (window.parent &amp;&amp; window.parent !== window &amp;&amp; window.parent.v9RespaldoAuto) window.parent.v9RespaldoAuto(); } catch (e) {}
+  localStorage.setItem(key, JSON.stringify({nombre, tipo, fecha: new Date().toISOString(), datos}));
   cerrarModal('modalSave');
   mostrarToast('✅ Guardado: ' + nombre);
 }
@@ -5567,7 +5554,37 @@ function confirmarGuardar() {
 // ================================================================
 // SERIALIZAR / DESERIALIZAR
 // ================================================================
-/* serializarPortal / deserializarPortal → ver bloque v9 al final del script */
+function serializarPortal(portalId) {
+  const p = document.getElementById(portalId);
+  if (!p) return {};
+  const data = {};
+  p.querySelectorAll('input, select, textarea').forEach((el, i) => {
+    const key = 'f_' + i;
+    data[key] = el.type === 'checkbox' ? el.checked : el.value;
+  });
+  p.querySelectorAll('.eva-bar').forEach((bar, i) => {
+    data['eva_' + i] = bar.dataset.value || '';
+  });
+  return data;
+}
+function deserializarPortal(portalId, data) {
+  const p = document.getElementById(portalId);
+  if (!p || !data) return;
+  p.querySelectorAll('input, select, textarea').forEach((el, i) => {
+    const v = data['f_' + i];
+    if (v !== undefined) {
+      if (el.type === 'checkbox') el.checked = !!v;
+      else el.value = v;
+    }
+  });
+  p.querySelectorAll('.eva-bar').forEach((bar, i) => {
+    const v = data['eva_' + i];
+    if (v !== undefined &amp;&amp; v !== '') {
+      const btn = bar.querySelector(`[data-v=&quot;${v}&quot;]`);
+      if (btn) btn.click();
+    }
+  });
+}
 
 function cargarPaciente(tipo, key) {
   try {
@@ -5575,8 +5592,6 @@ function cargarPaciente(tipo, key) {
     if (!r) return;
     limpiarCampos('p-' + tipo);
     deserializarPortal('p-' + tipo, r.datos);
-    borrarBorrador(tipo);
-    document.querySelectorAll('#p-' + tipo + ' .v9-banner').forEach(b => b.remove());
     cerrarModal('modalLoad');
     mostrarToast('📂 Cargado: ' + r.nombre);
   } catch(e) { alert('Error al cargar la historia.'); }
@@ -5632,14 +5647,12 @@ function limpiarCampos(portalId) {
       if (lst) lst.innerHTML = '<div style=\&quot;color:var(--gris3);font-style:italic;padding:4px 6px\&quot;>Sin marcas registradas</div>';
     }
   });
-  skullCount = 0; bodyCount = 0;
-  p.querySelectorAll('.eva-delta').forEach(d => d.textContent = 'Pendiente — selecciona dolor post para calcular Δ');
+  skullCount = 0;
 }
 
 function limpiar(portalId) {
   if (!confirm('¿Limpiar todos los campos del formulario?')) return;
   limpiarCampos(portalId);
-  borrarBorrador(portalId.slice(2)); v9Ficha = {}; v9BQ();
   mostrarToast('🗑 Formulario limpiado.');
 }
 
@@ -5709,8 +5722,7 @@ function updateEomList(svgId) {
     }
   });
   if (!items.length) { listEl.innerHTML = '<div style=&quot;color:var(--gris3);font-style:italic;padding:4px 6px&quot;>Sin marcas registradas</div>'; return; }
-  const names = svgId === 'eom-viscera' ? {l:'Tensión', m:'Doloroso', s:'Defensa'} : STATE_NAMES;
-  listEl.innerHTML = items.map(it => `<div class=&quot;em-item&quot;><span><b>${it.id}</b> · ${it.name}</span><span class=&quot;em-tag ${it.st}&quot;>${names[it.st]}</span></div>`).join('');
+  listEl.innerHTML = items.map(it => `<div class=&quot;em-item&quot;><span><b>${it.id}</b> · ${it.name}</span><span class=&quot;em-tag ${it.st}&quot;>${STATE_NAMES[it.st]}</span></div>`).join('');
 }
 
 // ─── 1. COLUMNA VERTEBRAL ───
@@ -5727,14 +5739,30 @@ function buildSpine() {
   // Sacro S1-S5
   for (let i = 1; i <= 5; i++) vertebrae.push({id:'S'+i, region:'sacro', y: 415 + (i-1) * 11});
 
+  // Vista posterior (derecha) — mismo set
   vertebrae.forEach(v => {
+    // Vista anterior (izquierda): círculo + label
+    const cx1 = 80;
+    const e1 = document.createElementNS(SVG_NS, 'ellipse');
+    e1.setAttribute('cx', cx1); e1.setAttribute('cy', v.y);
+    e1.setAttribute('rx', 10); e1.setAttribute('ry', 5);
+    e1.setAttribute('class', 'svg-click');
+    e1.dataset.id = v.id; e1.dataset.name = v.id + ' (anterior)'; e1.dataset.state = 'none';
+    e1.addEventListener('click', () => cycleState(e1, 'eom-spine'));
+    svg.appendChild(e1);
+    const l1 = document.createElementNS(SVG_NS, 'text');
+    l1.setAttribute('x', cx1 + 16); l1.setAttribute('y', v.y + 2);
+    l1.setAttribute('class', 'svg-vertebra-label');
+    l1.textContent = v.id;
+    svg.appendChild(l1);
+
     // Vista posterior (derecha)
-    const cx2 = 160;
+    const cx2 = 240;
     const e2 = document.createElementNS(SVG_NS, 'ellipse');
     e2.setAttribute('cx', cx2); e2.setAttribute('cy', v.y);
     e2.setAttribute('rx', 10); e2.setAttribute('ry', 5);
     e2.setAttribute('class', 'svg-click');
-    e2.dataset.id = v.id; e2.dataset.name = 'Vértebra ' + v.id; e2.dataset.state = 'none';
+    e2.dataset.id = v.id + ' (post)'; e2.dataset.name = v.id + ' (posterior)'; e2.dataset.state = 'none';
     e2.addEventListener('click', () => cycleState(e2, 'eom-spine'));
     svg.appendChild(e2);
     const l2 = document.createElementNS(SVG_NS, 'text');
@@ -6155,6 +6183,7 @@ const testsPieHC = [
   {t:'Hop test indoloro',                         e:'Aquíleo funcional'},
   {t:'Tinel canal del tarso',                     e:'Sd. túnel del tarso (tibial post)'},
   {t:'Mulder click test',                         e:'Neuroma de Morton (3er espacio)'},
+  {t:'Single leg heel raise test',                e:'Insuficiencia tibial posterior'},
   {t:'Too many toes sign',                        e:'Pie plano adquirido / tibial post'},
   {t:'Windlass test (Jack)',                      e:'Fascia plantar'},
   {t:'Test compresión calcánea',                  e:'Fractura por estrés calcáneo'},
@@ -6165,10 +6194,15 @@ const testsPieHC = [
 const testsDorsalHC = [
   {t:'Costovertebral spring test',  e:'Movilidad costovertebral'},
   {t:'Prone PAIVMs T1-T12',          e:'Disfunción intervertebral dorsal'},
+  {t:'Test Adams (flex tronco)',     e:'Detección escoliosis (giba costal)'},
   {t:'Slump test',                   e:'Tensión neural meníngea dorsal'},
   {t:'Sit-up test (rib springing)',  e:'Movilidad costo-vertebral'},
   {t:'First rib springing',          e:'1ª costilla — síndrome cervicobraquial'},
+  {t:'Schober torácico modificado',  e:'Movilidad flexión dorsal'},
   {t:'T4 syndrome screen',           e:'Síndrome dorsal alto (cefaleas, MMSS difusos)'},
+  {t:'Reflejos abdominales',         e:'Mielopatía dorsal (asimetría)'},
+  {t:'Babinski + Hoffmann + clonus', e:'Sospecha mielopatía dorsal'},
+  {t:'BASDAI / Schober + expansión', e:'Espondilitis anquilosante'},
   {t:'Romberg modificado dorsal',    e:'Componente neurológico ortostático'},
 ];
 
@@ -6372,13 +6406,12 @@ document.addEventListener('DOMContentLoaded', function() {
   ['eva-osteo-01','eva-osteo-post'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
-      buildEVA(id, id.endsWith('post') ? 'EVA POST-tratamiento' : 'EVA actual = EVA PRE-tratamiento');
+      let label = id.endsWith('pre') ? 'EVA PRE-tratamiento (estilo EOM)' : 'EVA POST-tratamiento (estilo EOM)';
+      buildEVA(id, label);
       // hook al click
       el.querySelectorAll('.eva-cell').forEach(b => b.addEventListener('click', () => setTimeout(updateEvaDelta, 50)));
     }
   });
-  // v9 — claves estables, autoguardado, botones de rapidez
-  v9Init();
   // Acordeón
   initAcordeon();
   // Cerrar modales al click fuera
@@ -6394,447 +6427,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const sel = document.getElementById('selector');
   if (sel) sel.style.display = '';
 });
-
-// ================================================================
-// v9 — PERSISTENCIA ROBUSTA · DATOS COMPARTIDOS · AUTOGUARDADO · RAPIDEZ
-// ================================================================
-// Índice v8 de cada campo conservado (por portal). Permite abrir historias
-// guardadas con versiones anteriores aunque se hayan eliminado campos repetidos.
-const V9_LEGACY = /*LEGACY_MAP*/{&quot;p-lumbar&quot;:&quot;0-19,21-51,53-210&quot;,&quot;p-hombro&quot;:&quot;0-21,23-252,254-285&quot;,&quot;p-rodilla&quot;:&quot;0-21,23,25-297&quot;,&quot;p-osteo&quot;:&quot;0-37,39-257,269-312&quot;,&quot;p-cervical&quot;:&quot;0-177,179-210&quot;,&quot;p-running&quot;:&quot;0-212,249-289&quot;,&quot;p-cadera&quot;:&quot;0-131,134-258,260-302&quot;,&quot;p-codo&quot;:&quot;0-38,40-123,125-192,194-230&quot;,&quot;p-muneca&quot;:&quot;0-126,128,130-201,203-236&quot;,&quot;p-mano&quot;:&quot;0-16,18-130,132-160,162-259,261-296&quot;,&quot;p-pie&quot;:&quot;0-48,50-150,153-201,203-250,252-288&quot;,&quot;p-dorsal&quot;:&quot;0-96,99-104,107-108,115-178,180-183,185-220&quot;,&quot;p-medular&quot;:&quot;0-202,204-225,227-265&quot;,&quot;p-neuro&quot;:&quot;0-203&quot;}/*END_LEGACY_MAP*/;
-
-function v9Expand(r) {
-  const out = [];
-  (r || '').split(',').forEach(p => {
-    if (!p) return;
-    const [a, b] = p.split('-').map(Number);
-    if (b === undefined) out.push(a); else for (let i = a; i <= b; i++) out.push(i);
-  });
-  return out;
-}
-function v9Campos(p) { return Array.from(p.querySelectorAll('input, select, textarea')); }
-function v9Stamp() {
-  document.querySelectorAll('.portal').forEach(p => {
-    const libres = v9Campos(p).filter(el => !el.dataset.k);
-    const map = V9_LEGACY[p.id] ? v9Expand(V9_LEGACY[p.id]) : [];
-    if (map.length !== libres.length) console.warn('v9: mapa de compatibilidad no coincide', p.id, map.length, libres.length);
-    libres.forEach((el, i) => { el.dataset.k = map[i] !== undefined ? 'f_' + map[i] : 'x_' + i; });
-  });
-}
-
-// ─── Guardar / cargar (campos + EVA + Tinetti + mapas corporales) ───
-function serializarPortal(portalId) {
-  const p = document.getElementById(portalId);
-  if (!p) return {};
-  const data = { _v: 9 };
-  v9Campos(p).forEach(el => {
-    const k = el.dataset.k; if (!k) return;
-    data[k] = (el.type === 'checkbox' || el.type === 'radio') ? el.checked : el.value;
-  });
-  const eva = {};
-  p.querySelectorAll('.eva-wrap[id]').forEach(w => {
-    if (w.dataset.value !== undefined &amp;&amp; w.dataset.value !== '') eva[w.id] = w.dataset.value;
-  });
-  data._eva = eva;
-  const eom = {};
-  p.querySelectorAll('svg[id^=&quot;eom-&quot;]').forEach(svg => {
-    const st = [], pts = [];
-    svg.querySelectorAll('[data-state]').forEach(el => {
-      const s = el.dataset.state;
-      if (!s || s === 'none') return;
-      if (el.classList.contains('body-point') || el.classList.contains('skull-point'))
-        pts.push([+(+el.getAttribute('cx')).toFixed(1), +(+el.getAttribute('cy')).toFixed(1), s]);
-      else st.push([el.dataset.id, s]);
-    });
-    if (st.length || pts.length) eom[svg.id] = { st, pts };
-  });
-  data._eom = eom;
-  return data;
-}
-function deserializarPortal(portalId, data) {
-  const p = document.getElementById(portalId);
-  if (!p || !data) return;
-  v9Campos(p).forEach(el => {
-    const k = el.dataset.k; if (!k) return;
-    const v = data[k];
-    if (v === undefined) return;
-    if (el.type === 'checkbox') el.checked = !!v;
-    else if (el.type === 'radio') { if (typeof v === 'boolean') el.checked = v; }   // v8 no guardaba los radios
-    else el.value = v;
-  });
-  // Scores automáticos (Tinetti / equilibrio / Schober / edad)
-  p.querySelectorAll('input[type=radio]:checked').forEach(r => r.dispatchEvent(new Event('change')));
-  p.querySelectorAll('.equil-row input').forEach(i => i.dispatchEvent(new Event('input')));
-  // EVA
-  Object.entries(data._eva || {}).forEach(([id, v]) => {
-    const w = document.getElementById(id);
-    if (!w || !p.contains(w)) return;
-    const b = w.querySelector(`.eva-cell[data-v=&quot;${v}&quot;]`);
-    if (b) b.click();
-  });
-  // Mapas corporales
-  Object.entries(data._eom || {}).forEach(([svgId, d]) => {
-    const svg = document.getElementById(svgId);
-    if (!svg || !p.contains(svg)) return;
-    (d.st || []).forEach(([id, s]) => {
-      const el = Array.from(svg.querySelectorAll('[data-state]')).find(x => x.dataset.id === id);
-      if (el) { el.classList.remove('st-l','st-m','st-s'); el.classList.add('st-' + s); el.dataset.state = s; }
-    });
-    (d.pts || []).forEach(([x, y, s]) => v9Punto(svg, x, y, s));
-    if (svgId === 'eom-body') updateBodyList();
-    else if (svgId === 'eom-skull') updateSkullList();
-    else updateEomList(svgId);
-  });
-  if (typeof updateEvaDelta === 'function') setTimeout(updateEvaDelta, 60);
-  v9BQ();
-}
-function v9Punto(svg, x, y, s) {
-  const esCraneo = svg.id === 'eom-skull';
-  const n = esCraneo ? ++skullCount : ++bodyCount;
-  const c = document.createElementNS(SVG_NS, 'circle');
-  c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', esCraneo ? 11 : 7);
-  c.setAttribute('class', (esCraneo ? 'skull-point' : 'body-point') + ' svg-click st-' + s);
-  if (esCraneo) c.setAttribute('fill-opacity', '0.7');
-  c.dataset.state = s; c.dataset.num = n; c.dataset.id = '#' + n;
-  if (esCraneo) {
-    const view = x < 401 ? (y < 380 ? 'Frontal' : 'Posterior') : (y < 380 ? 'Lateral D' : 'Lateral I');
-    c.dataset.name = `Punto ${n} · ${view}`;
-  } else c.dataset.name = `Punto ${n} (${Math.round(x)}, ${Math.round(y)})`;
-  svg.appendChild(c);
-  const t = document.createElementNS(SVG_NS, 'text');
-  t.setAttribute('x', x); t.setAttribute('y', y + (esCraneo ? 4 : 3));
-  t.setAttribute('class', esCraneo ? 'skull-point-num' : 'body-point-num');
-  t.setAttribute('data-num', n);
-  if (!esCraneo) { t.setAttribute('text-anchor', 'middle'); t.setAttribute('style', 'font-family:var(--mono);font-size:8px;fill:#000;pointer-events:none;font-weight:700'); }
-  t.textContent = n;
-  svg.appendChild(t);
-}
-
-// ─── Datos del paciente compartidos entre portales (solo en esta sesión) ───
-const V9_DATOS = [
-  ['nombre', /^nombre/], ['nac', /nacimiento/], ['edad', /^edad/], ['sexo', /^sexo/],
-  ['prof', /profesi|ocupaci/], ['dom', /^dominancia|^lateralidad/], ['ter', /^terapeuta/],
-  ['med', /^m[eé]dico/], ['feval', /^fecha (de )?(evaluaci|consulta)/]
-];
-const V9_SINON = { 'Hombre': 'Masculino', 'Masculino': 'Hombre', 'Mujer': 'Femenino', 'Femenino': 'Mujer' };
-let v9Ficha = {};
-function v9DatosCampos(p) {
-  const out = {};
-  const sec = p.querySelector('.fsec');
-  if (!sec) return out;
-  sec.querySelectorAll('label').forEach(l => {
-    const t = l.textContent.trim().toLowerCase();
-    const f = l.parentElement &amp;&amp; l.parentElement.querySelector('input, select, textarea');
-    if (!f) return;
-    for (const [k, re] of V9_DATOS) if (re.test(t) &amp;&amp; !out[k]) { out[k] = f; break; }
-  });
-  return out;
-}
-function v9Asignar(el, v) {
-  el.value = v;
-  if (el.tagName === 'SELECT' &amp;&amp; el.value !== v &amp;&amp; V9_SINON[v]) el.value = V9_SINON[v];
-}
-function v9NombrePaciente(tipo) {
-  const p = document.getElementById('p-' + tipo);
-  const c = p ? v9DatosCampos(p).nombre : null;
-  return c &amp;&amp; c.value ? c.value.trim() : '';
-}
-function v9Edad(fnac) {
-  if (!fnac) return '';
-  const n = new Date(fnac + 'T00:00:00'), h = new Date();
-  if (isNaN(n)) return '';
-  let e = h.getFullYear() - n.getFullYear();
-  const m = h.getMonth() - n.getMonth();
-  if (m < 0 || (m === 0 &amp;&amp; h.getDate() < n.getDate())) e--;
-  return e >= 0 &amp;&amp; e < 130 ? e : '';
-}
-function v9Hoy() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
-function v9Vacio(p) { return v9Campos(p).every(el => (el.type === 'checkbox' || el.type === 'radio') ? !el.checked : !el.value); }
-
-function v9Banner(p, html, botones) {
-  p.querySelectorAll('.v9-banner').forEach(b => b.remove());
-  const b = document.createElement('div');
-  b.className = 'v9-banner';
-  b.innerHTML = `<span>${html}</span>`;
-  botones.forEach(([txt, fn]) => {
-    const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn sec'; bt.textContent = txt;
-    bt.onclick = () => { fn(); b.remove(); };
-    b.appendChild(bt);
-  });
-  const x = document.createElement('button'); x.type = 'button'; x.className = 'v9-x'; x.textContent = '×'; x.onclick = () => b.remove();
-  b.appendChild(x);
-  const cab = p.firstElementChild;
-  cab.insertAdjacentElement('afterend', b);
-}
-
-function v9AlAbrir(tipo, prevTipo) {
-  const p = document.getElementById('p-' + tipo);
-  if (!p) return;
-  const borr = v9LeerBorrador(tipo);
-  if (borr &amp;&amp; v9Vacio(p)) {
-    v9Banner(p, `💾 Hay un borrador sin guardar${borr.nombre ? ' de <b>' + borr.nombre + '</b>' : ''} (${new Date(borr.fecha).toLocaleString('es-ES')}).`,
-      [['Recuperar', () => { deserializarPortal('p-' + tipo, borr.datos); mostrarToast('Borrador recuperado'); }],
-       ['Descartar', () => borrarBorrador(tipo)]]);
-    return;
-  }
-  const campos = v9DatosCampos(p);
-  const copiados = [];
-  Object.entries(v9Ficha).forEach(([k, v]) => {
-    const el = campos[k];
-    if (el &amp;&amp; v &amp;&amp; !el.value &amp;&amp; k !== 'feval') { v9Asignar(el, v); if (el.value) copiados.push(el); }
-  });
-  if (campos.feval &amp;&amp; campos.feval.type === 'date' &amp;&amp; !campos.feval.value) campos.feval.value = v9Hoy();
-  if (copiados.length &amp;&amp; v9Ficha.nombre) {
-    v9Banner(p, `👤 Datos del paciente copiados de <b>${v9Ficha.nombre}</b> (no hace falta volver a escribirlos).`,
-      [['Es otro paciente — vaciar', () => { copiados.forEach(el => el.value = ''); v9Ficha = {}; }]]);
-  }
-}
-
-// ─── Autoguardado de borrador ───
-let v9Timer = null;
-function v9LeerBorrador(tipo) { try { return JSON.parse(localStorage.getItem('v9_borrador_' + tipo) || 'null'); } catch (e) { return null; } }
-function borrarBorrador(tipo) { try { localStorage.removeItem('v9_borrador_' + tipo); } catch (e) {} }
-function v9Autoguardar(p) {
-  clearTimeout(v9Timer);
-  v9Timer = setTimeout(() => {
-    const tipo = p.id.slice(2);
-    if (v9Vacio(p)) return;
-    try {
-      localStorage.setItem('v9_borrador_' + tipo, JSON.stringify({ fecha: new Date().toISOString(), nombre: v9NombrePaciente(tipo), datos: serializarPortal(p.id) }));
-      const ind = p.querySelector('.v9-auto'); if (ind) { ind.textContent = '✓ Borrador autoguardado ' + new Date().toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'}); }
-    } catch (e) {}
-  }, 1200);
-}
-
-// ─── Botón &quot;Normal en vacíos&quot; (solo rellena lo que está vacío) ───
-const V9_NORMAL = ['Negativo', 'Normal', '+2 Normal', '2 (normal)', '5', 'No', 'Presente', 'Flexor (normal)'];
-function v9Normales(tabla) {
-  let n = 0;
-  tabla.querySelectorAll('tbody select').forEach(s => {
-    if (s.value) return;
-    const opts = Array.from(s.options).map(o => o.value);
-    let v = V9_NORMAL.find(x => opts.includes(x));
-    if (!v &amp;&amp; opts.includes('1+')) v = '0';           // Ashworth modificado: 0 = tono normal
-    if (v) { s.value = v; n++; }
-  });
-  const p = tabla.closest('.portal'); if (p) v9Autoguardar(p);
-  mostrarToast(n ? `⚡ ${n} casillas vacías marcadas como normales — revise las positivas` : 'No había casillas vacías');
-}
-
-function v9Init() {
-  v9Stamp();
-  document.querySelectorAll('.portal').forEach(p => {
-    // autoguardado
-    ['input', 'change'].forEach(ev => p.addEventListener(ev, () => v9Autoguardar(p)));
-    p.addEventListener('click', e => { if (e.target.closest('svg, .eva-cell')) v9Autoguardar(p); });
-    const bbar = p.querySelector('.bbar');
-    if (bbar) { const s = document.createElement('span'); s.className = 'v9-auto'; bbar.prepend(s); }
-    // datos compartidos + edad automática
-    const campos = v9DatosCampos(p);
-    Object.entries(campos).forEach(([k, el]) => {
-      el.addEventListener('change', () => {
-        if (k !== 'feval') { if (el.value) v9Ficha[k] = el.value; else delete v9Ficha[k]; }
-        if (k === 'nac' &amp;&amp; campos.edad) { const e = v9Edad(el.value); if (e !== '') { campos.edad.value = e; v9Ficha.edad = e; } }
-      });
-    });
-    if (campos.edad &amp;&amp; campos.nac) { campos.edad.readOnly = true; campos.edad.title = 'Se calcula con la fecha de nacimiento'; campos.edad.classList.add('v9-auto-campo'); }
-    // botones &quot;Normal en vacíos&quot;
-    p.querySelectorAll('table.tabla').forEach(tb => {
-      if (tb.classList.contains('v9-sin-normal') || tb.querySelectorAll('tbody select').length < 4) return;
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 'v9-normal'; b.textContent = '⚡ Normal en vacíos';
-      b.title = 'Marca como normal/negativo solo las casillas que siguen vacías';
-      b.onclick = () => v9Normales(tb);
-      tb.insertAdjacentElement('beforebegin', b);
-    });
-    // línea de firma (impresión) con el terapeuta de la sección 01
-    const ult = p.querySelectorAll('.fsec');
-    if (ult.length) {
-      const f = document.createElement('div'); f.className = 'v9-firma';
-      f.innerHTML = 'Firma del terapeuta: ______________________________ <span class=&quot;v9-firma-nom&quot;></span>';
-      ult[ult.length - 1].appendChild(f);
-    }
-  });
-  // Schober lumbar: incremento automático
-  const pl = document.getElementById('p-lumbar');
-  if (pl) {
-    const L = {}; pl.querySelectorAll('label').forEach(l => { const f = l.parentElement.querySelector('input'); if (f) L[l.textContent.trim()] = f; });
-    const a = L['Distancia inicial (cm)'], b = L['En flexión máx (cm)'], c = L['Incremento (cm)'];
-    if (a &amp;&amp; b &amp;&amp; c) {
-      c.readOnly = true; c.classList.add('v9-auto-campo');
-      const calc = () => { if (a.value &amp;&amp; b.value) c.value = (parseFloat(b.value) - parseFloat(a.value)).toFixed(1); };
-      a.addEventListener('input', calc); b.addEventListener('input', calc);
-    }
-  }
-  window.addEventListener('beforeprint', () => {
-    document.querySelectorAll('.portal').forEach(p => {
-      const t = v9DatosCampos(p).ter; const s = p.querySelector('.v9-firma-nom');
-      if (s) s.textContent = t &amp;&amp; t.value ? '(' + t.value + ')' : '';
-    });
-  });
-}
-
-
-// ================================================================
-// v9.1 — BOURNEMOUTH · EXCEL/CSV · CIFRADO PARA COMPARTIR
-// ================================================================
-function v9BQsum(get) {
-  let s = 0, n = 0;
-  for (let i = 1; i <= 7; i++) { const v = get(i); if (v !== '' &amp;&amp; v !== undefined &amp;&amp; v !== null) { s += +v; n++; } }
-  return n === 7 ? s : (n ? null : '');
-}
-function v9BQ() {
-  const tb = document.getElementById('bq-osteo');
-  if (!tb) return;
-  const val = (p, i) => (tb.querySelector(`[data-k=&quot;n_bq_${p}${i}&quot;]`) || {}).value;
-  const b = v9BQsum(i => val('b', i)), r = v9BQsum(i => val('r', i));
-  const f = x => x === '' ? '—' : (x === null ? 'incompleto' : x + '/70');
-  document.getElementById('bq-sub').textContent = `Basal ${f(b)} · Reevaluación ${f(r)}`;
-  const d = document.getElementById('bq-delta'), it = document.getElementById('bq-int');
-  it.classList.remove('ri', 'ra');
-  if (typeof b === 'number' &amp;&amp; typeof r === 'number') {
-    const pct = b ? Math.round((b - r) / b * 100) : 0;
-    d.textContent = (r - b > 0 ? '+' : '') + (r - b);
-    if (pct >= 30) it.textContent = `Mejora ${pct}% — clínicamente relevante (≥30%)`;
-    else if (pct > 0) { it.textContent = `Mejora ${pct}% — por debajo del umbral relevante`; it.classList.add('ri'); }
-    else { it.textContent = pct === 0 ? 'Sin cambio' : `Empeoramiento ${-pct}%`; it.classList.add('ra'); }
-  } else if (typeof b === 'number') { d.textContent = b; it.textContent = 'Basal registrado — pendiente reevaluación'; }
-  else { d.textContent = '—'; it.textContent = 'Pendiente'; }
-}
-
-// ─── Exportar a Excel (CSV con ; y UTF-8, se abre directamente en Excel) ───
-function v9Columnas(p) {
-  const cols = [];
-  v9Campos(p).forEach(el => {
-    if (!el.dataset.k || el.type === 'radio' || el.type === 'file' || el.closest('.v9-banner')) return;
-    const sec = el.closest('.fsec');
-    const fn = sec ? sec.querySelector('.fn').textContent.trim() : '';
-    let lab = '';
-    const f = el.closest('.f, .diag-box, .tf');
-    if (f &amp;&amp; f.querySelector('label')) lab = f.querySelector('label').textContent.trim();
-    else if (el.closest('label')) lab = el.closest('label').textContent.trim();
-    else if (el.closest('tr')) {
-      const tr = el.closest('tr'), td = el.closest('td'), ci = Array.from(tr.cells).indexOf(td);
-      const th = tr.closest('table').querySelectorAll('thead th')[ci];
-      lab = ((tr.cells[0].querySelector('b') || tr.cells[0]).textContent).trim().replace(/\s+/g, ' ').slice(0, 80) + ' · ' + (th ? th.textContent.trim() : 'col ' + ci);
-    } else if (el.closest('.equil-row')) lab = 'Equilibrio · ' + el.closest('.equil-row').querySelector('b').textContent + (el.tagName === 'SELECT' ? ' (logra)' : ' (s)');
-    else if (el.placeholder) lab = el.placeholder;
-    if (!lab) { const sub = sec &amp;&amp; sec.querySelector('.sub'); lab = sub ? sub.textContent.trim() : el.dataset.k; }
-    cols.push({ k: el.dataset.k, lab: fn + ' · ' + lab, tipo: el.type });
-  });
-  p.querySelectorAll('.eva-wrap[id]').forEach(w => {
-    const t = w.querySelector('.eva-title span');
-    cols.push({ eva: w.id, lab: 'EVA · ' + (t ? t.textContent.trim() : w.id) });
-  });
-  p.querySelectorAll('tbody[id^=&quot;tin-&quot;]').forEach(tb => cols.push({ tin: tb.id, lab: 'Tinetti marcha · total' }));
-  if (p.querySelector('#bq-osteo')) { cols.push({ bq: 'b', lab: 'BQ total basal (0-70)' }); cols.push({ bq: 'r', lab: 'BQ total reevaluación (0-70)' }); }
-  p.querySelectorAll('svg[id^=&quot;eom-&quot;]').forEach(s => cols.push({ eom: s.id, lab: 'Mapa · ' + s.id.replace('eom-', '') }));
-  return cols;
-}
-function v9Valor(c, datos, p) {
-  if (c.k) { const v = datos[c.k]; if (v === true) return 'Sí'; if (v === false || v === undefined || v === null) return ''; return v; }
-  if (c.eva) return (datos._eva || {})[c.eva] || '';
-  if (c.tin) {
-    let s = 0, n = 0;
-    p.querySelectorAll('#' + c.tin + ' input[type=radio]').forEach(r => { if (datos[r.dataset.k] === true) { s += +r.dataset.v; n++; } });
-    return n ? s : '';
-  }
-  if (c.bq) { const s = v9BQsum(i => datos['n_bq_' + c.bq + i]); return typeof s === 'number' ? s : ''; }
-  if (c.eom) {
-    const d = (datos._eom || {})[c.eom]; if (!d) return '';
-    const nom = { l: 'leve', m: 'moderado', s: 'severo' };
-    return [...(d.st || []).map(([id, s]) => id + ':' + nom[s]), ...(d.pts || []).map(([x, y, s], i) => '#' + (i + 1) + ':' + nom[s])].join(' | ');
-  }
-  return '';
-}
-function v9Historias(tipo) {
-  const out = [];
-  Object.keys(localStorage).filter(k => k.startsWith('pt_' + tipo + '_')).forEach(k => {
-    try { const r = JSON.parse(localStorage.getItem(k)); if (r &amp;&amp; r.datos) out.push(r); } catch (e) {}
-  });
-  return out.sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
-}
-function v9CSV(filas) {
-  const q = v => { v = v === null || v === undefined ? '' : String(v); return '&quot;' + v.replace(/&quot;/g, '&quot;&quot;').replace(/\r?\n/g, ' ') + '&quot;'; };
-  return '﻿' + filas.map(f => f.map(q).join(';')).join('\r\n');
-}
-function v9Descargar(nombre, contenido, mime) {
-  const blob = new Blob([contenido], { type: mime || 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = nombre;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
-}
-function v9TablaPortal(tipo) {
-  const p = document.getElementById('p-' + tipo);
-  const hist = v9Historias(tipo);
-  const cols = v9Columnas(p);
-  const filas = [['Paciente', 'Guardada', 'Especialidad', ...cols.map(c => c.lab)]];
-  hist.forEach(r => filas.push([r.nombre, r.fecha ? r.fecha.slice(0, 10) : '', tipo, ...cols.map(c => v9Valor(c, r.datos, p))]));
-  return { filas, n: hist.length };
-}
-function v9ExportarExcel(tipo) {
-  const { filas, n } = v9TablaPortal(tipo);
-  if (!n) { alert('No hay historias guardadas en este portal. Pulsa 💾 Guardar primero.'); return; }
-  v9Descargar(`historias_${tipo}_${v9Hoy()}.csv`, v9CSV(filas));
-  mostrarToast(`📊 Exportadas ${n} historias (${filas[0].length} columnas)`);
-}
-// Formato largo (una fila por dato): ideal para investigación / tablas dinámicas, todos los portales
-function v9ExportarTodoLargo() {
-  const filas = [['Paciente', 'Guardada', 'Especialidad', 'Sección · campo', 'Valor']];
-  let n = 0;
-  document.querySelectorAll('.portal').forEach(p => {
-    const tipo = p.id.slice(2), hist = v9Historias(tipo);
-    if (!hist.length) return;
-    const cols = v9Columnas(p);
-    hist.forEach(r => { n++; cols.forEach(c => { const v = v9Valor(c, r.datos, p); if (v !== '') filas.push([r.nombre, r.fecha ? r.fecha.slice(0, 10) : '', tipo, c.lab, v]); }); });
-  });
-  if (!n) { alert('No hay historias guardadas.'); return 0; }
-  v9Descargar(`portal_clinico_todas_${v9Hoy()}.csv`, v9CSV(filas));
-  return n;
-}
-
-// ─── Cifrado AES-256-GCM con contraseña (PBKDF2-SHA256, 250.000 iteraciones) ───
-const v9b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
-const v9unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-async function v9Clave(pw, salt) {
-  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
-  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
-}
-async function v9Cifrar(obj, pw, extra) {
-  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
-  const k = await v9Clave(pw, salt);
-  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, new TextEncoder().encode(JSON.stringify(obj)));
-  return Object.assign({ formato: 'portal-clinico-cifrado', v: 1, alg: 'AES-256-GCM/PBKDF2-SHA256-250k', salt: v9b64(salt), iv: v9b64(iv), ct: v9b64(ct) }, extra || {});
-}
-async function v9Descifrar(env, pw) {
-  const k = await v9Clave(pw, v9unb64(env.salt));
-  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: v9unb64(env.iv) }, k, v9unb64(env.ct));
-  return JSON.parse(new TextDecoder().decode(pt));
-}
-async function v9Compartir(tipo) {
-  const p = document.getElementById('p-' + tipo);
-  if (v9Vacio(p)) { alert('El formulario está vacío. Carga o rellena una historia antes de compartirla.'); return; }
-  if (!window.crypto || !crypto.subtle) { alert('Este navegador no permite cifrar. Usa Chrome, Edge o Firefox actualizados.'); return; }
-  const pw = prompt('Contraseña para cifrar la historia (mínimo 8 caracteres).\nEnvíasela al otro profesional por OTRO canal (llamada o SMS), nunca junto al archivo.');
-  if (!pw) return;
-  if (pw.length < 8) { alert('La contraseña debe tener al menos 8 caracteres.'); return; }
-  if (prompt('Repite la contraseña:') !== pw) { alert('Las contraseñas no coinciden.'); return; }
-  const obj = { portal: tipo, nombre: v9NombrePaciente(tipo) || 'paciente', fecha: v9Hoy(), version: '9.1', datos: serializarPortal('p-' + tipo) };
-  const env = await v9Cifrar(obj, pw, { portal: tipo });
-  v9Descargar(`historia_${tipo}_${v9Hoy()}_cifrada.json`, JSON.stringify(env), 'application/json');
-  mostrarToast('🔒 Historia cifrada lista para enviar');
-}
-// Botones en la barra inferior de cada portal
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.portal').forEach(p => {
-    const bbar = p.querySelector('.bbar'); if (!bbar) return;
-    const tipo = p.id.slice(2);
-    const mk = (txt, title, fn, cls) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + (cls || 'prn'); b.textContent = txt; b.title = title; b.onclick = fn; bbar.appendChild(b); };
-    mk('📊 Excel', 'Descargar todas las historias guardadas de este portal en una hoja (CSV para Excel)', () => v9ExportarExcel(tipo));
-    mk('🔒 Compartir', 'Descargar esta historia cifrada con contraseña para enviarla a otro profesional', () => v9Compartir(tipo), 'sec');
+</script>
+<script>
+// Filas de tests que repetían un dato ya registrado en otra sección (se ocultan; los datos guardados no se mueven)
+document.addEventListener('DOMContentLoaded', function () {
+  [[&quot;tests-cadera-hc&quot;, &quot;Test de Lasègue / SLR&quot;], [&quot;tests-pie-hc&quot;, &quot;Single leg heel raise test&quot;], [&quot;tests-dorsal-hc&quot;, &quot;Test Adams (flex tronco)&quot;], [&quot;tests-dorsal-hc&quot;, &quot;Schober torácico modificado&quot;], [&quot;tests-dorsal-hc&quot;, &quot;Reflejos abdominales&quot;], [&quot;tests-dorsal-hc&quot;, &quot;Babinski + Hoffmann + clonus&quot;], [&quot;tests-dorsal-hc&quot;, &quot;BASDAI / Schober + expansión&quot;]].forEach(function (x) {
+    document.querySelectorAll('#' + x[0] + ' tr').forEach(function (tr) { if (tr.cells[0] &amp;&amp; tr.cells[0].textContent.trim() === x[1]) tr.style.display = 'none'; });
   });
 });
-
 </script>
 </body>
 </html>"></iframe>
@@ -6870,8 +6470,6 @@ function showScreen(name) {
 function renderDashboard() {
   renderStats();
   renderPatientList();
-  renderEspList();
-  renderRespaldo();
 }
 
 function renderStats() {
@@ -7238,154 +6836,6 @@ function showToast(msg) {
   });
   document.body.appendChild(t);
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 2500);
-}
-
-// ───────────────────────────────────────
-//  v9 — HISTORIAS GUARDADAS EN LOS PORTALES POR ESPECIALIDAD
-// ───────────────────────────────────────
-const ESP_NOMBRES = { lumbar:'Región lumbar', hombro:'Hombro', rodilla:'Rodilla', osteo:'Osteopatía', cervical:'Columna cervical',
-  running:'Running & triatlón', cadera:'Cadera', codo:'Codo', muneca:'Muñeca', mano:'Mano y dedos', pie:'Tobillo · pie',
-  dorsal:'Región dorsal', medular:'Lesión medular', neuro:'Neurológicas (adulto)' };
-function leerHistoriasEsp() {
-  const out = [];
-  Object.keys(localStorage).filter(k => k.startsWith('pt_')).forEach(k => {
-    try { const r = JSON.parse(localStorage.getItem(k)); if (r && r.tipo) out.push({ key: k, ...r }); } catch (e) {}
-  });
-  return out.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
-}
-function escHTML(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function renderEspList() {
-  const tbody = document.getElementById('espTableBody');
-  if (!tbody) return;
-  const q = (document.getElementById('searchInput').value || '').toLowerCase();
-  const list = leerHistoriasEsp().filter(r => !q || (r.nombre || '').toLowerCase().includes(q) || (ESP_NOMBRES[r.tipo] || '').toLowerCase().includes(q));
-  if (!list.length) { tbody.innerHTML = `<tr><td colspan="5" class="no-data">📭 Sin historias por especialidad guardadas</td></tr>`; return; }
-  tbody.innerHTML = list.map((r, i) => `<tr>
-      <td>${i + 1}</td><td><strong>${escHTML(r.nombre)}</strong></td><td>${escHTML(ESP_NOMBRES[r.tipo] || r.tipo)}</td>
-      <td>${r.fecha ? new Date(r.fecha).toLocaleDateString('es-ES') : '—'}</td>
-      <td><button class="btn btn-primary btn-sm" onclick="abrirHistoriaEsp('${r.tipo}','${encodeURIComponent(r.key)}')">📂 Abrir</button></td>
-    </tr>`).join('');
-}
-function abrirHistoriaEsp(tipo, keyEnc) {
-  const key = decodeURIComponent(keyEnc);
-  showScreen('terapeutico');
-  const w = document.getElementById('terapFrame').contentWindow;
-  if (!w || typeof w.abrir !== 'function') { alert('El portal por especialidad aún se está cargando. Inténtalo de nuevo.'); return; }
-  w.abrir(tipo);
-  w.cargarPaciente(tipo, key);
-}
-const _searchInp = document.getElementById('searchInput');
-if (_searchInp) _searchInp.addEventListener('input', renderEspList);
-
-// ───────────────────────────────────────
-//  v9.1 — RESPALDO EN LA NUBE (carpeta Drive/OneDrive) · RESTAURAR · EXCEL
-// ───────────────────────────────────────
-const RESP_CLAVE = k => k === 'pc_patients' || k.startsWith('pt_');
-function v9Fr() { return document.getElementById('terapFrame').contentWindow; }
-function v9Hoy() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
-let v9PwSesion;   // undefined = aún no se hizo copia en esta sesión ('' = sin cifrar)
-function v9NumHistorias() { return Object.keys(localStorage).filter(k => k.startsWith('pt_')).length + patients.length; }
-async function v9ContenidoRespaldo(pw) {
-  const claves = {}; Object.keys(localStorage).filter(RESP_CLAVE).forEach(k => claves[k] = localStorage.getItem(k));
-  const obj = { formato: 'portal-clinico-respaldo', v: 1, fecha: new Date().toISOString(), claves };
-  return JSON.stringify(pw ? await v9Fr().v9Cifrar(obj, pw, { tipo: 'respaldo' }) : obj);
-}
-function v9IDB() { return new Promise((res, rej) => { const r = indexedDB.open('portal_clinico_v9', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
-async function v9KV(k, v) {
-  const db = await v9IDB();
-  return new Promise((res, rej) => { const tx = db.transaction('kv', v === undefined ? 'readonly' : 'readwrite'); const st = tx.objectStore('kv'); const rq = v === undefined ? st.get(k) : st.put(v, k); rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error); });
-}
-async function v9ElegirCarpeta() {
-  if (!window.showDirectoryPicker) { alert('Este navegador no permite elegir una carpeta (funciona en Chrome o Edge de ordenador).\n\nAlternativa: pulsa "💾 Copia de seguridad" y guarda el archivo dentro de tu carpeta de Google Drive / OneDrive.'); return; }
-  try {
-    const h = await window.showDirectoryPicker({ mode: 'readwrite', id: 'respaldo-portal' });
-    await v9KV('carpeta', h);
-    showToast('📁 Carpeta de respaldo: ' + h.name);
-    renderRespaldo();
-  } catch (e) { if (e.name !== 'AbortError') alert('No se pudo usar la carpeta: ' + e.message); }
-}
-async function v9EscribirCarpeta(nombre, contenido, interactivo) {
-  let h; try { h = await v9KV('carpeta'); } catch (e) { return false; }
-  if (!h || !h.queryPermission) return false;
-  let perm = await h.queryPermission({ mode: 'readwrite' });
-  if (perm !== 'granted' && interactivo) perm = await h.requestPermission({ mode: 'readwrite' });
-  if (perm !== 'granted') return false;
-  const fh = await h.getFileHandle(nombre, { create: true });
-  const w = await fh.createWritable(); await w.write(contenido); await w.close();
-  return true;
-}
-function v9DescargarTxt(nombre, txt) {
-  const url = URL.createObjectURL(new Blob([txt], { type: 'application/json' }));
-  const a = document.createElement('a'); a.href = url; a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
-}
-async function v9CopiaSeguridad() {
-  if (!v9NumHistorias()) { alert('Todavía no hay historias guardadas.'); return; }
-  const pw = prompt('Contraseña para CIFRAR la copia (recomendado, mínimo 8 caracteres).\nGuárdala bien: sin ella la copia no se puede abrir.\n\nDeja vacío para guardarla sin cifrar.');
-  if (pw === null) return;
-  if (pw && pw.length < 8) { alert('Mínimo 8 caracteres.'); return; }
-  if (pw && prompt('Repite la contraseña:') !== pw) { alert('Las contraseñas no coinciden.'); return; }
-  v9PwSesion = pw;
-  const cont = await v9ContenidoRespaldo(pw);
-  const nombre = `respaldo_portal_clinico_${v9Hoy()}${pw ? '_cifrado' : ''}.json`;
-  const enCarpeta = await v9EscribirCarpeta(nombre, cont, true).catch(() => false);
-  if (!enCarpeta) v9DescargarTxt(nombre, cont);
-  localStorage.setItem('v9_ultima_copia', new Date().toISOString());
-  renderRespaldo();
-  showToast(enCarpeta ? '✅ Copia guardada en la carpeta de respaldo' : '⬇ Copia descargada — muévela a tu Google Drive / OneDrive');
-}
-// Se llama tras cada 💾 Guardar en un portal: si ya se hizo una copia en esta sesión y hay carpeta, la actualiza sola
-async function v9RespaldoAuto() {
-  if (v9PwSesion === undefined) return;
-  try {
-    const ok = await v9EscribirCarpeta(`respaldo_portal_clinico_AUTO${v9PwSesion ? '_cifrado' : ''}.json`, await v9ContenidoRespaldo(v9PwSesion), false);
-    if (ok) { localStorage.setItem('v9_ultima_copia', new Date().toISOString()); renderRespaldo(); }
-  } catch (e) {}
-}
-function v9Restaurar(ev) {
-  const file = ev.target.files[0]; if (!file) return;
-  const r = new FileReader();
-  r.onload = async e => {
-    try {
-      let obj = JSON.parse(e.target.result);
-      if (obj.formato === 'portal-clinico-cifrado') {
-        const pw = prompt('Copia cifrada. Contraseña:'); if (!pw) return;
-        try { obj = await v9Fr().v9Descifrar(obj, pw); } catch (x) { alert('Contraseña incorrecta o archivo dañado.'); return; }
-      }
-      if (obj.formato !== 'portal-clinico-respaldo' || !obj.claves) { alert('Este archivo no es una copia de seguridad del portal.\n(Para una historia individual usa ⬆ JSON dentro del portal.)'); return; }
-      const ks = Object.keys(obj.claves).filter(RESP_CLAVE);
-      const pisa = ks.filter(k => k !== 'pc_patients' && localStorage.getItem(k) !== null && localStorage.getItem(k) !== obj.claves[k]).length;
-      if (!confirm(`Copia del ${new Date(obj.fecha).toLocaleString('es-ES')}\n${ks.length} registros.${pisa ? `\n⚠ ${pisa} historias con el mismo nombre se reemplazarán por la versión de la copia.` : ''}\n\n¿Restaurar?`)) return;
-      ks.forEach(k => {
-        if (k === 'pc_patients') {
-          const act = JSON.parse(localStorage.getItem('pc_patients') || '[]'), nue = JSON.parse(obj.claves[k] || '[]');
-          const m = new Map(act.map(p => [p.id, p])); nue.forEach(p => m.set(p.id, p));
-          localStorage.setItem('pc_patients', JSON.stringify([...m.values()]));
-        } else localStorage.setItem(k, obj.claves[k]);
-      });
-      patients = JSON.parse(localStorage.getItem('pc_patients') || '[]');
-      renderDashboard();
-      showToast('♻ Copia restaurada');
-    } catch (x) { alert('Error al leer la copia: ' + x.message); }
-    finally { ev.target.value = ''; }
-  };
-  r.readAsText(file);
-}
-function v9ExcelTodo() {
-  const w = v9Fr();
-  if (!w || !w.v9ExportarTodoLargo) { alert('El portal aún se está cargando.'); return; }
-  const n = w.v9ExportarTodoLargo();
-  if (n) showToast(`📊 Exportadas ${n} historias (una fila por dato)`);
-}
-async function renderRespaldo() {
-  const el = document.getElementById('respaldoEstado'); if (!el) return;
-  const u = localStorage.getItem('v9_ultima_copia');
-  let h = null; try { h = await v9KV('carpeta'); } catch (e) {}
-  const dias = u ? Math.floor((Date.now() - new Date(u)) / 864e5) : null;
-  const alerta = v9NumHistorias() && (dias === null || dias >= 7);
-  el.className = 'respaldo-estado' + (alerta ? ' alerta' : '');
-  el.innerHTML = (u ? `Última copia: <b>${new Date(u).toLocaleString('es-ES')}</b>` : 'Aún no has hecho ninguna copia de seguridad')
-    + ` · Carpeta: <b>${h ? h.name : 'no elegida'}</b>` + (alerta ? ' — ⚠ Haz una copia: los datos solo están en este navegador' : '');
 }
 
 // ───────────────────────────────────────
