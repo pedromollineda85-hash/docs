@@ -67,6 +67,9 @@
   .patients-table .no-data { text-align: center; color: var(--text-light); padding: 40px; }
   .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
   .badge-m { background: #dbeafe; color: #1d4ed8; }
+  .respaldo-bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:-8px 0 18px; }
+  .respaldo-estado { flex-basis:100%; font-size:.8rem; color:var(--text-light); }
+  .respaldo-estado.alerta { color:#9a5b00; background:#fff6e0; border:1px solid #f3cf7a; padding:6px 10px; border-radius:6px; }
   .esp-title { margin: 28px 0 12px; font-size: 1rem; color: var(--primary); }
   .badge-f { background: #fce7f3; color: #be185d; }
 
@@ -174,6 +177,14 @@
   <div class="search-bar">
     <input type="text" id="searchInput" placeholder="🔍  Buscar por nombre, cédula o diagnóstico…" oninput="renderPatientList()">
     <button class="btn btn-success" onclick="showScreen('terapeutico')">+ Nueva Historia Clínica</button>
+  </div>
+  <div class="respaldo-bar">
+    <button class="btn btn-secondary btn-sm" onclick="v9ExcelTodo()" title="Todas las historias de todos los portales, una fila por dato">📊 Exportar todo a Excel</button>
+    <button class="btn btn-secondary btn-sm" onclick="v9CopiaSeguridad()">💾 Copia de seguridad</button>
+    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('respaldoFile').click()">♻ Restaurar copia</button>
+    <button class="btn btn-secondary btn-sm" onclick="v9ElegirCarpeta()" title="Elige una carpeta sincronizada con Google Drive u OneDrive">📁 Carpeta de respaldo (Drive/OneDrive)</button>
+    <input type="file" id="respaldoFile" accept=".json,application/json" style="display:none" onchange="v9Restaurar(event)">
+    <div id="respaldoEstado" class="respaldo-estado"></div>
   </div>
 
   <table class="patients-table" id="patientTable">
@@ -1238,6 +1249,10 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
 .v9-firma{display:none;margin:22px 16px 12px;font-size:12px}
 @media print{.v9-firma{display:block}.v9-banner,.v9-normal,.v9-auto{display:none!important}}
 
+.bq-q{font-size:11px;color:var(--gris2);margin-top:2px;line-height:1.35}
+.bq-anc{font-size:9.5px;color:var(--gris3);margin-top:2px;font-style:italic}
+.bq-tabla td select{font-size:13px;padding:3px 6px}
+.bq-sub{font-size:11px;color:var(--gris3);margin-top:3px;font-family:var(--mono)}
 </style>
 </head>
 <body>
@@ -1969,6 +1984,19 @@ body{font-family:var(--fuente);background:var(--papel);color:var(--gris1);font-s
       <label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Anticoagulación / trombopenia</label>
       <label class=&quot;ci&quot;><input type=&quot;checkbox&quot;> Ninguna bandera roja identificada</label>
     </div></div></div></div>
+
+    <!-- 2b CUESTIONARIO BOURNEMOUTH (BQ) — PROM osteopático (v9) -->
+    <div class=&quot;fsec&quot;><div class=&quot;fh c-or ab&quot; onclick=&quot;tog(this,'osteo')&quot;><span class=&quot;fn&quot;>2b</span><span class=&quot;fi&quot;>📝</span><h3>Cuestionario Bournemouth (BQ) — resultado referido por el paciente</h3><span class=&quot;ft&quot;>▾</span></div>
+    <div class=&quot;fb ab&quot;>
+      <div class=&quot;rom-info&quot;><b>Para qué sirve:</b> PROM multidimensional de 7 ítems (0-10; total 0-70, mayor = peor) usado por el NCOR para medir resultados en osteopatía. Pásalo en la primera visita (basal) y en la reevaluación o alta. El paciente responde pensando en la <b>última semana</b>.</div>
+      <div class=&quot;g3&quot; style=&quot;margin-bottom:8px&quot;>
+        <div class=&quot;f&quot;><label>Fecha BQ basal</label><input type=&quot;date&quot; data-k=&quot;n_bq_fb&quot;></div>
+        <div class=&quot;f&quot;><label>Fecha BQ reevaluación</label><input type=&quot;date&quot; data-k=&quot;n_bq_fr&quot;></div>
+        <div class=&quot;f&quot;><label>Región del problema</label><input type=&quot;text&quot; data-k=&quot;n_bq_reg&quot; placeholder=&quot;Ej. lumbar, cervical...&quot;></div>
+      </div>
+      <table class=&quot;tabla bq-tabla v9-sin-normal&quot;><thead><tr><th>Ítem</th><th style=&quot;width:90px&quot;>Basal</th><th style=&quot;width:110px&quot;>Reevaluación</th></tr></thead><tbody id=&quot;bq-osteo&quot;><tr><td><b>1. Dolor</b><div class=&quot;bq-q&quot;>Durante la última semana, en promedio, ¿cómo calificaría su dolor?</div><div class=&quot;bq-anc&quot;>0 = Sin dolor · 10 = El peor dolor posible</div></td><td><select data-k=&quot;n_bq_b1&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r1&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>2. AVD</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cuánto ha interferido su problema en sus actividades diarias (tareas de casa, lavarse, vestirse, caminar, subir escaleras, acostarse/levantarse)?</div><div class=&quot;bq-anc&quot;>0 = Sin interferencia · 10 = Incapaz de realizarlas</div></td><td><select data-k=&quot;n_bq_b2&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r2&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>3. Social</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cuánto ha interferido su problema en sus actividades sociales, recreativas y familiares?</div><div class=&quot;bq-anc&quot;>0 = Sin interferencia · 10 = Incapaz de realizarlas</div></td><td><select data-k=&quot;n_bq_b3&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r3&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>4. Ansiedad</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cuán ansioso/a (tenso, nervioso, irritable, con dificultad para concentrarse o relajarse) se ha sentido?</div><div class=&quot;bq-anc&quot;>0 = Nada · 10 = Extremadamente</div></td><td><select data-k=&quot;n_bq_b4&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r4&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>5. Depresión</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cuán deprimido/a (desanimado, triste, pesimista, infeliz) se ha sentido?</div><div class=&quot;bq-anc&quot;>0 = Nada · 10 = Extremadamente</div></td><td><select data-k=&quot;n_bq_b5&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r5&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>6. Trabajo</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cómo cree que su trabajo (dentro o fuera de casa) ha afectado (o afectaría) a su problema?</div><div class=&quot;bq-anc&quot;>0 = No lo ha empeorado · 10 = Lo ha empeorado mucho</div></td><td><select data-k=&quot;n_bq_b6&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r6&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr><tr><td><b>7. Autocontrol</b><div class=&quot;bq-q&quot;>Durante la última semana, ¿cuánto ha podido controlar (reducir o ayudar) su problema por sí mismo/a?</div><div class=&quot;bq-anc&quot;>0 = Control total · 10 = Ningún control</div></td><td><select data-k=&quot;n_bq_b7&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td><td><select data-k=&quot;n_bq_r7&quot; onchange=&quot;v9BQ()&quot;><option value=&quot;&quot;>—</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></td></tr></tbody></table>
+      <div class=&quot;score-block&quot; id=&quot;bq-score&quot;><div><div class=&quot;sb-lab&quot;>Total BQ (0-70)</div><div class=&quot;bq-sub&quot; id=&quot;bq-sub&quot;>Basal — · Reevaluación —</div></div><div style=&quot;display:flex;align-items:baseline;gap:5px&quot;><span class=&quot;sb-val&quot; id=&quot;bq-delta&quot;>—</span></div><div class=&quot;sb-int&quot; id=&quot;bq-int&quot;>Pendiente</div></div>
+    </div></div>
 
     <!-- 03 ANTECEDENTES POR SISTEMAS — estilo EOM -->
     <div class=&quot;fsec&quot;><div class=&quot;fh c-or&quot; onclick=&quot;tog(this,'osteo')&quot;><span class=&quot;fn&quot;>03</span><span class=&quot;fi&quot;>📁</span><h3>Antecedentes familiares y personales por sistemas (estilo EOM)</h3><span class=&quot;ft&quot;>▾</span></div>
@@ -5311,9 +5339,15 @@ function importarJSON(ev) {
   if (!file) return;
   const tipoDestino = ev.target.dataset.tipo;
   const r = new FileReader();
-  r.onload = (e) => {
+  r.onload = async (e) => {
     try {
-      const obj = JSON.parse(e.target.result);
+      let obj = JSON.parse(e.target.result);
+      if (obj.formato === 'portal-clinico-cifrado') {
+        const pw = prompt('Esta historia está cifrada. Introduce la contraseña que te dio el profesional:');
+        if (!pw) { ev.target.value = ''; return; }
+        try { obj = await v9Descifrar(obj, pw); }
+        catch (x) { alert('Contraseña incorrecta o archivo dañado.'); ev.target.value = ''; return; }
+      }
       if (!obj.datos) { alert('Archivo JSON inválido.'); return; }
       if (obj.portal &amp;&amp; obj.portal !== tipoDestino) {
         if (!confirm(`Archivo del portal &quot;${obj.portal}&quot; → &quot;${tipoDestino}&quot;. Continuar?`)) return;
@@ -5525,6 +5559,7 @@ function confirmarGuardar() {
   const key = 'pt_' + tipo + '_' + nombre.replace(/\s+/g,'_').toLowerCase();
   localStorage.setItem(key, JSON.stringify({nombre, tipo, fecha: new Date().toISOString(), version: 9, datos}));
   borrarBorrador(tipo);
+  try { if (window.parent &amp;&amp; window.parent !== window &amp;&amp; window.parent.v9RespaldoAuto) window.parent.v9RespaldoAuto(); } catch (e) {}
   cerrarModal('modalSave');
   mostrarToast('✅ Guardado: ' + nombre);
 }
@@ -5604,7 +5639,7 @@ function limpiarCampos(portalId) {
 function limpiar(portalId) {
   if (!confirm('¿Limpiar todos los campos del formulario?')) return;
   limpiarCampos(portalId);
-  borrarBorrador(portalId.slice(2)); v9Ficha = {};
+  borrarBorrador(portalId.slice(2)); v9Ficha = {}; v9BQ();
   mostrarToast('🗑 Formulario limpiado.');
 }
 
@@ -6450,6 +6485,7 @@ function deserializarPortal(portalId, data) {
     else updateEomList(svgId);
   });
   if (typeof updateEvaDelta === 'function') setTimeout(updateEvaDelta, 60);
+  v9BQ();
 }
 function v9Punto(svg, x, y, s) {
   const esCraneo = svg.id === 'eom-skull';
@@ -6603,7 +6639,7 @@ function v9Init() {
     if (campos.edad &amp;&amp; campos.nac) { campos.edad.readOnly = true; campos.edad.title = 'Se calcula con la fecha de nacimiento'; campos.edad.classList.add('v9-auto-campo'); }
     // botones &quot;Normal en vacíos&quot;
     p.querySelectorAll('table.tabla').forEach(tb => {
-      if (tb.querySelectorAll('tbody select').length < 4) return;
+      if (tb.classList.contains('v9-sin-normal') || tb.querySelectorAll('tbody select').length < 4) return;
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'v9-normal'; b.textContent = '⚡ Normal en vacíos';
       b.title = 'Marca como normal/negativo solo las casillas que siguen vacías';
@@ -6636,6 +6672,168 @@ function v9Init() {
     });
   });
 }
+
+
+// ================================================================
+// v9.1 — BOURNEMOUTH · EXCEL/CSV · CIFRADO PARA COMPARTIR
+// ================================================================
+function v9BQsum(get) {
+  let s = 0, n = 0;
+  for (let i = 1; i <= 7; i++) { const v = get(i); if (v !== '' &amp;&amp; v !== undefined &amp;&amp; v !== null) { s += +v; n++; } }
+  return n === 7 ? s : (n ? null : '');
+}
+function v9BQ() {
+  const tb = document.getElementById('bq-osteo');
+  if (!tb) return;
+  const val = (p, i) => (tb.querySelector(`[data-k=&quot;n_bq_${p}${i}&quot;]`) || {}).value;
+  const b = v9BQsum(i => val('b', i)), r = v9BQsum(i => val('r', i));
+  const f = x => x === '' ? '—' : (x === null ? 'incompleto' : x + '/70');
+  document.getElementById('bq-sub').textContent = `Basal ${f(b)} · Reevaluación ${f(r)}`;
+  const d = document.getElementById('bq-delta'), it = document.getElementById('bq-int');
+  it.classList.remove('ri', 'ra');
+  if (typeof b === 'number' &amp;&amp; typeof r === 'number') {
+    const pct = b ? Math.round((b - r) / b * 100) : 0;
+    d.textContent = (r - b > 0 ? '+' : '') + (r - b);
+    if (pct >= 30) it.textContent = `Mejora ${pct}% — clínicamente relevante (≥30%)`;
+    else if (pct > 0) { it.textContent = `Mejora ${pct}% — por debajo del umbral relevante`; it.classList.add('ri'); }
+    else { it.textContent = pct === 0 ? 'Sin cambio' : `Empeoramiento ${-pct}%`; it.classList.add('ra'); }
+  } else if (typeof b === 'number') { d.textContent = b; it.textContent = 'Basal registrado — pendiente reevaluación'; }
+  else { d.textContent = '—'; it.textContent = 'Pendiente'; }
+}
+
+// ─── Exportar a Excel (CSV con ; y UTF-8, se abre directamente en Excel) ───
+function v9Columnas(p) {
+  const cols = [];
+  v9Campos(p).forEach(el => {
+    if (!el.dataset.k || el.type === 'radio' || el.type === 'file' || el.closest('.v9-banner')) return;
+    const sec = el.closest('.fsec');
+    const fn = sec ? sec.querySelector('.fn').textContent.trim() : '';
+    let lab = '';
+    const f = el.closest('.f, .diag-box, .tf');
+    if (f &amp;&amp; f.querySelector('label')) lab = f.querySelector('label').textContent.trim();
+    else if (el.closest('label')) lab = el.closest('label').textContent.trim();
+    else if (el.closest('tr')) {
+      const tr = el.closest('tr'), td = el.closest('td'), ci = Array.from(tr.cells).indexOf(td);
+      const th = tr.closest('table').querySelectorAll('thead th')[ci];
+      lab = ((tr.cells[0].querySelector('b') || tr.cells[0]).textContent).trim().replace(/\s+/g, ' ').slice(0, 80) + ' · ' + (th ? th.textContent.trim() : 'col ' + ci);
+    } else if (el.closest('.equil-row')) lab = 'Equilibrio · ' + el.closest('.equil-row').querySelector('b').textContent + (el.tagName === 'SELECT' ? ' (logra)' : ' (s)');
+    else if (el.placeholder) lab = el.placeholder;
+    if (!lab) { const sub = sec &amp;&amp; sec.querySelector('.sub'); lab = sub ? sub.textContent.trim() : el.dataset.k; }
+    cols.push({ k: el.dataset.k, lab: fn + ' · ' + lab, tipo: el.type });
+  });
+  p.querySelectorAll('.eva-wrap[id]').forEach(w => {
+    const t = w.querySelector('.eva-title span');
+    cols.push({ eva: w.id, lab: 'EVA · ' + (t ? t.textContent.trim() : w.id) });
+  });
+  p.querySelectorAll('tbody[id^=&quot;tin-&quot;]').forEach(tb => cols.push({ tin: tb.id, lab: 'Tinetti marcha · total' }));
+  if (p.querySelector('#bq-osteo')) { cols.push({ bq: 'b', lab: 'BQ total basal (0-70)' }); cols.push({ bq: 'r', lab: 'BQ total reevaluación (0-70)' }); }
+  p.querySelectorAll('svg[id^=&quot;eom-&quot;]').forEach(s => cols.push({ eom: s.id, lab: 'Mapa · ' + s.id.replace('eom-', '') }));
+  return cols;
+}
+function v9Valor(c, datos, p) {
+  if (c.k) { const v = datos[c.k]; if (v === true) return 'Sí'; if (v === false || v === undefined || v === null) return ''; return v; }
+  if (c.eva) return (datos._eva || {})[c.eva] || '';
+  if (c.tin) {
+    let s = 0, n = 0;
+    p.querySelectorAll('#' + c.tin + ' input[type=radio]').forEach(r => { if (datos[r.dataset.k] === true) { s += +r.dataset.v; n++; } });
+    return n ? s : '';
+  }
+  if (c.bq) { const s = v9BQsum(i => datos['n_bq_' + c.bq + i]); return typeof s === 'number' ? s : ''; }
+  if (c.eom) {
+    const d = (datos._eom || {})[c.eom]; if (!d) return '';
+    const nom = { l: 'leve', m: 'moderado', s: 'severo' };
+    return [...(d.st || []).map(([id, s]) => id + ':' + nom[s]), ...(d.pts || []).map(([x, y, s], i) => '#' + (i + 1) + ':' + nom[s])].join(' | ');
+  }
+  return '';
+}
+function v9Historias(tipo) {
+  const out = [];
+  Object.keys(localStorage).filter(k => k.startsWith('pt_' + tipo + '_')).forEach(k => {
+    try { const r = JSON.parse(localStorage.getItem(k)); if (r &amp;&amp; r.datos) out.push(r); } catch (e) {}
+  });
+  return out.sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+}
+function v9CSV(filas) {
+  const q = v => { v = v === null || v === undefined ? '' : String(v); return '&quot;' + v.replace(/&quot;/g, '&quot;&quot;').replace(/\r?\n/g, ' ') + '&quot;'; };
+  return '﻿' + filas.map(f => f.map(q).join(';')).join('\r\n');
+}
+function v9Descargar(nombre, contenido, mime) {
+  const blob = new Blob([contenido], { type: mime || 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+function v9TablaPortal(tipo) {
+  const p = document.getElementById('p-' + tipo);
+  const hist = v9Historias(tipo);
+  const cols = v9Columnas(p);
+  const filas = [['Paciente', 'Guardada', 'Especialidad', ...cols.map(c => c.lab)]];
+  hist.forEach(r => filas.push([r.nombre, r.fecha ? r.fecha.slice(0, 10) : '', tipo, ...cols.map(c => v9Valor(c, r.datos, p))]));
+  return { filas, n: hist.length };
+}
+function v9ExportarExcel(tipo) {
+  const { filas, n } = v9TablaPortal(tipo);
+  if (!n) { alert('No hay historias guardadas en este portal. Pulsa 💾 Guardar primero.'); return; }
+  v9Descargar(`historias_${tipo}_${v9Hoy()}.csv`, v9CSV(filas));
+  mostrarToast(`📊 Exportadas ${n} historias (${filas[0].length} columnas)`);
+}
+// Formato largo (una fila por dato): ideal para investigación / tablas dinámicas, todos los portales
+function v9ExportarTodoLargo() {
+  const filas = [['Paciente', 'Guardada', 'Especialidad', 'Sección · campo', 'Valor']];
+  let n = 0;
+  document.querySelectorAll('.portal').forEach(p => {
+    const tipo = p.id.slice(2), hist = v9Historias(tipo);
+    if (!hist.length) return;
+    const cols = v9Columnas(p);
+    hist.forEach(r => { n++; cols.forEach(c => { const v = v9Valor(c, r.datos, p); if (v !== '') filas.push([r.nombre, r.fecha ? r.fecha.slice(0, 10) : '', tipo, c.lab, v]); }); });
+  });
+  if (!n) { alert('No hay historias guardadas.'); return 0; }
+  v9Descargar(`portal_clinico_todas_${v9Hoy()}.csv`, v9CSV(filas));
+  return n;
+}
+
+// ─── Cifrado AES-256-GCM con contraseña (PBKDF2-SHA256, 250.000 iteraciones) ───
+const v9b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const v9unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function v9Clave(pw, salt) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function v9Cifrar(obj, pw, extra) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const k = await v9Clave(pw, salt);
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, new TextEncoder().encode(JSON.stringify(obj)));
+  return Object.assign({ formato: 'portal-clinico-cifrado', v: 1, alg: 'AES-256-GCM/PBKDF2-SHA256-250k', salt: v9b64(salt), iv: v9b64(iv), ct: v9b64(ct) }, extra || {});
+}
+async function v9Descifrar(env, pw) {
+  const k = await v9Clave(pw, v9unb64(env.salt));
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: v9unb64(env.iv) }, k, v9unb64(env.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function v9Compartir(tipo) {
+  const p = document.getElementById('p-' + tipo);
+  if (v9Vacio(p)) { alert('El formulario está vacío. Carga o rellena una historia antes de compartirla.'); return; }
+  if (!window.crypto || !crypto.subtle) { alert('Este navegador no permite cifrar. Usa Chrome, Edge o Firefox actualizados.'); return; }
+  const pw = prompt('Contraseña para cifrar la historia (mínimo 8 caracteres).\nEnvíasela al otro profesional por OTRO canal (llamada o SMS), nunca junto al archivo.');
+  if (!pw) return;
+  if (pw.length < 8) { alert('La contraseña debe tener al menos 8 caracteres.'); return; }
+  if (prompt('Repite la contraseña:') !== pw) { alert('Las contraseñas no coinciden.'); return; }
+  const obj = { portal: tipo, nombre: v9NombrePaciente(tipo) || 'paciente', fecha: v9Hoy(), version: '9.1', datos: serializarPortal('p-' + tipo) };
+  const env = await v9Cifrar(obj, pw, { portal: tipo });
+  v9Descargar(`historia_${tipo}_${v9Hoy()}_cifrada.json`, JSON.stringify(env), 'application/json');
+  mostrarToast('🔒 Historia cifrada lista para enviar');
+}
+// Botones en la barra inferior de cada portal
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.portal').forEach(p => {
+    const bbar = p.querySelector('.bbar'); if (!bbar) return;
+    const tipo = p.id.slice(2);
+    const mk = (txt, title, fn, cls) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + (cls || 'prn'); b.textContent = txt; b.title = title; b.onclick = fn; bbar.appendChild(b); };
+    mk('📊 Excel', 'Descargar todas las historias guardadas de este portal en una hoja (CSV para Excel)', () => v9ExportarExcel(tipo));
+    mk('🔒 Compartir', 'Descargar esta historia cifrada con contraseña para enviarla a otro profesional', () => v9Compartir(tipo), 'sec');
+  });
+});
 
 </script>
 </body>
@@ -6673,6 +6871,7 @@ function renderDashboard() {
   renderStats();
   renderPatientList();
   renderEspList();
+  renderRespaldo();
 }
 
 function renderStats() {
@@ -7077,6 +7276,117 @@ function abrirHistoriaEsp(tipo, keyEnc) {
 }
 const _searchInp = document.getElementById('searchInput');
 if (_searchInp) _searchInp.addEventListener('input', renderEspList);
+
+// ───────────────────────────────────────
+//  v9.1 — RESPALDO EN LA NUBE (carpeta Drive/OneDrive) · RESTAURAR · EXCEL
+// ───────────────────────────────────────
+const RESP_CLAVE = k => k === 'pc_patients' || k.startsWith('pt_');
+function v9Fr() { return document.getElementById('terapFrame').contentWindow; }
+function v9Hoy() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
+let v9PwSesion;   // undefined = aún no se hizo copia en esta sesión ('' = sin cifrar)
+function v9NumHistorias() { return Object.keys(localStorage).filter(k => k.startsWith('pt_')).length + patients.length; }
+async function v9ContenidoRespaldo(pw) {
+  const claves = {}; Object.keys(localStorage).filter(RESP_CLAVE).forEach(k => claves[k] = localStorage.getItem(k));
+  const obj = { formato: 'portal-clinico-respaldo', v: 1, fecha: new Date().toISOString(), claves };
+  return JSON.stringify(pw ? await v9Fr().v9Cifrar(obj, pw, { tipo: 'respaldo' }) : obj);
+}
+function v9IDB() { return new Promise((res, rej) => { const r = indexedDB.open('portal_clinico_v9', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+async function v9KV(k, v) {
+  const db = await v9IDB();
+  return new Promise((res, rej) => { const tx = db.transaction('kv', v === undefined ? 'readonly' : 'readwrite'); const st = tx.objectStore('kv'); const rq = v === undefined ? st.get(k) : st.put(v, k); rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error); });
+}
+async function v9ElegirCarpeta() {
+  if (!window.showDirectoryPicker) { alert('Este navegador no permite elegir una carpeta (funciona en Chrome o Edge de ordenador).\n\nAlternativa: pulsa "💾 Copia de seguridad" y guarda el archivo dentro de tu carpeta de Google Drive / OneDrive.'); return; }
+  try {
+    const h = await window.showDirectoryPicker({ mode: 'readwrite', id: 'respaldo-portal' });
+    await v9KV('carpeta', h);
+    showToast('📁 Carpeta de respaldo: ' + h.name);
+    renderRespaldo();
+  } catch (e) { if (e.name !== 'AbortError') alert('No se pudo usar la carpeta: ' + e.message); }
+}
+async function v9EscribirCarpeta(nombre, contenido, interactivo) {
+  let h; try { h = await v9KV('carpeta'); } catch (e) { return false; }
+  if (!h || !h.queryPermission) return false;
+  let perm = await h.queryPermission({ mode: 'readwrite' });
+  if (perm !== 'granted' && interactivo) perm = await h.requestPermission({ mode: 'readwrite' });
+  if (perm !== 'granted') return false;
+  const fh = await h.getFileHandle(nombre, { create: true });
+  const w = await fh.createWritable(); await w.write(contenido); await w.close();
+  return true;
+}
+function v9DescargarTxt(nombre, txt) {
+  const url = URL.createObjectURL(new Blob([txt], { type: 'application/json' }));
+  const a = document.createElement('a'); a.href = url; a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+async function v9CopiaSeguridad() {
+  if (!v9NumHistorias()) { alert('Todavía no hay historias guardadas.'); return; }
+  const pw = prompt('Contraseña para CIFRAR la copia (recomendado, mínimo 8 caracteres).\nGuárdala bien: sin ella la copia no se puede abrir.\n\nDeja vacío para guardarla sin cifrar.');
+  if (pw === null) return;
+  if (pw && pw.length < 8) { alert('Mínimo 8 caracteres.'); return; }
+  if (pw && prompt('Repite la contraseña:') !== pw) { alert('Las contraseñas no coinciden.'); return; }
+  v9PwSesion = pw;
+  const cont = await v9ContenidoRespaldo(pw);
+  const nombre = `respaldo_portal_clinico_${v9Hoy()}${pw ? '_cifrado' : ''}.json`;
+  const enCarpeta = await v9EscribirCarpeta(nombre, cont, true).catch(() => false);
+  if (!enCarpeta) v9DescargarTxt(nombre, cont);
+  localStorage.setItem('v9_ultima_copia', new Date().toISOString());
+  renderRespaldo();
+  showToast(enCarpeta ? '✅ Copia guardada en la carpeta de respaldo' : '⬇ Copia descargada — muévela a tu Google Drive / OneDrive');
+}
+// Se llama tras cada 💾 Guardar en un portal: si ya se hizo una copia en esta sesión y hay carpeta, la actualiza sola
+async function v9RespaldoAuto() {
+  if (v9PwSesion === undefined) return;
+  try {
+    const ok = await v9EscribirCarpeta(`respaldo_portal_clinico_AUTO${v9PwSesion ? '_cifrado' : ''}.json`, await v9ContenidoRespaldo(v9PwSesion), false);
+    if (ok) { localStorage.setItem('v9_ultima_copia', new Date().toISOString()); renderRespaldo(); }
+  } catch (e) {}
+}
+function v9Restaurar(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = async e => {
+    try {
+      let obj = JSON.parse(e.target.result);
+      if (obj.formato === 'portal-clinico-cifrado') {
+        const pw = prompt('Copia cifrada. Contraseña:'); if (!pw) return;
+        try { obj = await v9Fr().v9Descifrar(obj, pw); } catch (x) { alert('Contraseña incorrecta o archivo dañado.'); return; }
+      }
+      if (obj.formato !== 'portal-clinico-respaldo' || !obj.claves) { alert('Este archivo no es una copia de seguridad del portal.\n(Para una historia individual usa ⬆ JSON dentro del portal.)'); return; }
+      const ks = Object.keys(obj.claves).filter(RESP_CLAVE);
+      const pisa = ks.filter(k => k !== 'pc_patients' && localStorage.getItem(k) !== null && localStorage.getItem(k) !== obj.claves[k]).length;
+      if (!confirm(`Copia del ${new Date(obj.fecha).toLocaleString('es-ES')}\n${ks.length} registros.${pisa ? `\n⚠ ${pisa} historias con el mismo nombre se reemplazarán por la versión de la copia.` : ''}\n\n¿Restaurar?`)) return;
+      ks.forEach(k => {
+        if (k === 'pc_patients') {
+          const act = JSON.parse(localStorage.getItem('pc_patients') || '[]'), nue = JSON.parse(obj.claves[k] || '[]');
+          const m = new Map(act.map(p => [p.id, p])); nue.forEach(p => m.set(p.id, p));
+          localStorage.setItem('pc_patients', JSON.stringify([...m.values()]));
+        } else localStorage.setItem(k, obj.claves[k]);
+      });
+      patients = JSON.parse(localStorage.getItem('pc_patients') || '[]');
+      renderDashboard();
+      showToast('♻ Copia restaurada');
+    } catch (x) { alert('Error al leer la copia: ' + x.message); }
+    finally { ev.target.value = ''; }
+  };
+  r.readAsText(file);
+}
+function v9ExcelTodo() {
+  const w = v9Fr();
+  if (!w || !w.v9ExportarTodoLargo) { alert('El portal aún se está cargando.'); return; }
+  const n = w.v9ExportarTodoLargo();
+  if (n) showToast(`📊 Exportadas ${n} historias (una fila por dato)`);
+}
+async function renderRespaldo() {
+  const el = document.getElementById('respaldoEstado'); if (!el) return;
+  const u = localStorage.getItem('v9_ultima_copia');
+  let h = null; try { h = await v9KV('carpeta'); } catch (e) {}
+  const dias = u ? Math.floor((Date.now() - new Date(u)) / 864e5) : null;
+  const alerta = v9NumHistorias() && (dias === null || dias >= 7);
+  el.className = 'respaldo-estado' + (alerta ? ' alerta' : '');
+  el.innerHTML = (u ? `Última copia: <b>${new Date(u).toLocaleString('es-ES')}</b>` : 'Aún no has hecho ninguna copia de seguridad')
+    + ` · Carpeta: <b>${h ? h.name : 'no elegida'}</b>` + (alerta ? ' — ⚠ Haz una copia: los datos solo están en este navegador' : '');
+}
 
 // ───────────────────────────────────────
 //  INIT
